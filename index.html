@@ -335,7 +335,7 @@
       </div>
       <div class="import-actions">
         <label class="import-button" id="import-label" for="excel-file" title="Chọn file Excel từ thiết bị cho nhóm đang học">
-          <span aria-hidden="true">+</span> Nhập Excel từ máy
+            <span aria-hidden="true">+</span> Nhập Excel từ máy
         </label>
           <button class="import-button repo-import-button" id="repo-import-button" type="button" title="Chọn file Excel trong folder Vocab của repository">
             <span aria-hidden="true">↓</span> Chọn Excel trong repo
@@ -360,6 +360,9 @@
             </button>
             <button class="mode-tab" id="tab-regular-verbs" type="button" role="tab" aria-selected="false" aria-controls="study-panel" data-mode="regularVerbs" tabindex="-1">
               <span class="tab-number" aria-hidden="true">04</span><span class="tab-name">Động từ có quy tắc</span><span class="tab-count" id="regular-verbs-count">0</span>
+            </button>
+            <button class="mode-tab" id="tab-single-words" type="button" role="tab" aria-selected="false" aria-controls="study-panel" data-mode="singleWords" tabindex="-1">
+              <span class="tab-number" aria-hidden="true">05</span><span class="tab-name">Từ đơn</span><span class="tab-count" id="single-words-count">0</span>
             </button>
           </div>
         </aside>
@@ -503,20 +506,25 @@
       plural: [],
       noPlural: [],
       verbs: [],
-      regularVerbs: []
+      regularVerbs: [],
+      singleWords: []
     };
-    const sourceNames = { plural: "Chưa nhập", noPlural: "Chưa nhập", verbs: "Chưa nhập", regularVerbs: "Chưa nhập" };
-    const repoWorkbooks = {
-      plural: ["Vocab/noun1.xlsx", "Vocab/noun2.xlsx", "Vocab/noun3.xlsx"],
-      noPlural: ["Vocab/thungay.xlsx"],
-      verbs: ["Vocab/dongtubatquytac.xlsx"],
-      regularVerbs: ["Vocab/dongtucoquytac.xlsx"]
+    const sourceNames = { plural: "Chưa nhập", noPlural: "Chưa nhập", verbs: "Chưa nhập", regularVerbs: "Chưa nhập", singleWords: "Chưa nhập" };
+    const repoFileModes = {
+      "Vocab/noun1.xlsx": "plural",
+      "Vocab/noun2.xlsx": "plural",
+      "Vocab/noun3.xlsx": "plural",
+      "Vocab/thungay.xlsx": "noPlural",
+      "Vocab/dongtubatquytac.xlsx": "verbs",
+      "Vocab/dongtucoquytac.xlsx": "regularVerbs",
+      "Vocab/tudon.xlsx": "singleWords"
     };
     const modeTitles = {
       plural: "Danh từ có dạng số nhiều",
       noPlural: "Danh từ không có dạng số nhiều",
       verbs: "Động từ bất quy tắc",
-      regularVerbs: "Động từ có quy tắc"
+      regularVerbs: "Động từ có quy tắc",
+      singleWords: "Từ đơn"
     };
     const verbForms = [
       ["ich", "ich", "Ich"],
@@ -538,6 +546,7 @@
     let quizMistakes = [];
     let quizAnswered = false;
     let quizOptions = [];
+    let quizAdvanceTimer = null;
     const previousQuizOrder = {};
     let progress = loadProgress();
     let toastTimer;
@@ -574,7 +583,7 @@
         german: String(row[0] ?? "").trim(),
         form: String(row[1] ?? "").trim(),
         meaning: String(row[2] ?? "").trim()
-      }) : mode === "noPlural" || mode === "regularVerbs" ? ({
+      }) : mode === "noPlural" || mode === "regularVerbs" || mode === "singleWords" ? ({
         german: String(row[0] ?? "").trim(),
         form: "",
         meaning: String(row[1] ?? "").trim()
@@ -626,7 +635,7 @@
     function applyImportedCards(importedCards, sourceName) {
       cardSets[activeMode] = importedCards;
       sourceNames[activeMode] = sourceName;
-      const countElement = activeMode === "plural" ? "plural-count" : activeMode === "noPlural" ? "no-plural-count" : activeMode === "verbs" ? "verbs-count" : "regular-verbs-count";
+      const countElement = activeMode === "plural" ? "plural-count" : activeMode === "noPlural" ? "no-plural-count" : activeMode === "verbs" ? "verbs-count" : activeMode === "regularVerbs" ? "regular-verbs-count" : "single-words-count";
       document.getElementById(countElement).textContent = importedCards.length;
       document.getElementById("source-name").textContent = sourceName;
       currentIndex = 0;
@@ -638,12 +647,10 @@
     function openRepoFilePicker() {
       const dialog = document.getElementById("repo-file-dialog");
       const fileList = document.getElementById("repo-file-list");
-      const paths = repoWorkbooks[activeMode] || [];
+      const paths = Object.keys(repoFileModes);
       fileList.replaceChildren();
-      document.getElementById("repo-dialog-title").textContent = `Chọn Excel cho: ${modeTitles[activeMode]}`;
-      document.getElementById("repo-dialog-description").textContent = paths.length > 1
-        ? "Chọn một workbook trong folder Vocab để nạp vào nhóm đang học."
-        : "Chọn workbook trong folder Vocab để nạp vào nhóm đang học.";
+      document.getElementById("repo-dialog-title").textContent = "Chọn Excel trong Vocab repo";
+      document.getElementById("repo-dialog-description").textContent = "Danh sách gồm tất cả file Excel trong repo. Chọn file để nạp vào nhóm phù hợp.";
       for (const path of paths) {
         const choice = document.createElement("button");
         choice.type = "button";
@@ -653,7 +660,7 @@
         name.textContent = path.split("/").at(-1);
         const kind = document.createElement("span");
         kind.className = "repo-file-type";
-        kind.textContent = "Excel";
+        kind.textContent = modeTitles[repoFileModes[path]];
         choice.append(name, kind);
         choice.addEventListener("click", () => importRepoWorkbook(path));
         fileList.append(choice);
@@ -665,10 +672,13 @@
       const button = document.getElementById("repo-import-button");
       button.disabled = true;
       try {
+        const mode = repoFileModes[path];
+        if (!mode) throw new Error("File này chưa được ánh xạ vào nhóm học.");
         await ensureXlsxLibrary();
         const rows = await fetchWorkbookRows(path);
-        const importedCards = parseWorkbookRows(rows, activeMode);
+        const importedCards = parseWorkbookRows(rows, mode);
         if (!importedCards.length) throw new Error(`Không có dữ liệu hợp lệ trong ${path}.`);
+        switchMode(mode);
         applyImportedCards(importedCards, path);
         document.getElementById("repo-file-dialog").close();
         showToast(`Đã nhập ${importedCards.length} thẻ từ ${path}.`);
@@ -684,7 +694,7 @@
       activeMode = mode;
       cards = cardSets[mode];
       currentIndex = 0;
-      cardElement.classList.toggle("no-plural", mode === "noPlural" || mode === "regularVerbs");
+      cardElement.classList.toggle("no-plural", mode === "noPlural" || mode === "regularVerbs" || mode === "singleWords");
       cardElement.classList.toggle("verb-mode", mode === "verbs");
       document.querySelectorAll(".mode-tab").forEach(tab => {
         const selected = tab.dataset.mode === mode;
@@ -695,7 +705,7 @@
       document.getElementById("study-panel").setAttribute("aria-labelledby", tab.id);
       document.getElementById("page-title").textContent = modeTitles[mode];
       document.getElementById("source-name").textContent = sourceNames[mode];
-      document.getElementById("source-description").textContent = mode === "plural" ? "Cột A là từ gốc; cột B và C là đáp án." : mode === "noPlural" ? "Cột A là từ; cột B là nghĩa tiếng Việt." : mode === "regularVerbs" ? "Cột A là động từ; cột B là nghĩa tiếng Việt." : "Cột A là động từ gốc; B-G là cách chia; H là nghĩa.";
+      document.getElementById("source-description").textContent = mode === "plural" ? "Cột A là từ gốc; cột B và C là đáp án." : mode === "noPlural" ? "Cột A là từ; cột B là nghĩa tiếng Việt." : mode === "regularVerbs" || mode === "singleWords" ? "Cột A là từ tiếng Đức; cột B là nghĩa tiếng Việt." : "Cột A là động từ gốc; B-G là cách chia; H là nghĩa.";
       document.getElementById("import-label").title = mode === "plural" ? "Chọn Excel: cột A từ gốc, B dạng số nhiều, C nghĩa" : mode === "noPlural" || mode === "regularVerbs" ? "Chọn Excel: cột A từ tiếng Đức, B nghĩa tiếng Việt" : "Chọn Excel: cột A động từ gốc, B-G cách chia, H nghĩa";
       renderCard();
       if (practiceMode === "quiz" && cards.length) startQuiz();
@@ -784,6 +794,7 @@
     }
 
     function setPracticeMode(mode) {
+      if (mode !== "quiz") clearQuizAdvanceTimer();
       practiceMode = mode;
       const isQuiz = mode === "quiz";
       const hasCards = cards.length > 0;
@@ -799,6 +810,7 @@
 
     function startQuiz(direction = quizDirection) {
       if (!cards.length) return;
+      clearQuizAdvanceTimer();
       quizDirection = direction;
       const entries = cards.map((card, index) => ({ card, index }));
       for (let index = entries.length - 1; index > 0; index--) {
@@ -932,6 +944,10 @@
         quizCorrect++;
         feedback.textContent = "Chính xác!";
         feedback.classList.add("is-correct");
+        quizAdvanceTimer = setTimeout(() => {
+          quizAdvanceTimer = null;
+          advanceQuiz();
+        }, 2000);
       } else {
         const prompt = quizDirection === "viToDe" ? card.meaning : card.german;
         quizMistakes.push({ prompt, selected: selected.value, correct: correctOption.value });
@@ -944,8 +960,15 @@
 
     function advanceQuiz() {
       if (!quizAnswered) return;
+      clearQuizAdvanceTimer();
       quizIndex++;
       renderQuizQuestion();
+    }
+
+    function clearQuizAdvanceTimer() {
+      if (quizAdvanceTimer === null) return;
+      clearTimeout(quizAdvanceTimer);
+      quizAdvanceTimer = null;
     }
 
     function renderQuizResults() {
