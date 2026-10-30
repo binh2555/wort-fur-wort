@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f2">
+  <title>Wort für Wort | Từ vựng tiếng Đức</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18342d;
+      --muted: #718078;
+      --paper: #f4f6f2;
+      --white: #fff;
+      --line: #dfe6df;
+      --green: #245f4c;
+      --green-dark: #184737;
+      --mint: #e2eee5;
+      --coral: #c95d47;
+      --coral-soft: #f8e9e4;
+      --shadow: 0 24px 70px rgba(29, 57, 45, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 7% 5%, rgba(196, 218, 197, .5), transparent 28rem),
+        radial-gradient(ellipse at 94% 92%, rgba(241, 211, 197, .42), transparent 25rem),
+        var(--paper);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    button { color: inherit; font: inherit; }
+    [hidden] { display: none !important; }
+
+    .app-shell { width: min(1920px, calc(100% - 64px)); margin: 0 auto; }
+
+    .topbar {
+      height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(24, 52, 45, .12);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px 11px 11px 3px;
+      background: var(--green);
+      color: white;
+      font-family: Georgia, serif;
+      font-size: 19px;
+      font-weight: 700;
+    }
+    .brand-name { font-size: 15px; font-weight: 800; letter-spacing: .2px; }
+    .brand-caption { margin-top: 3px; color: var(--muted); font-size: 11px; }
+
+    .import-button, .icon-button, .rating-button, .flip-hint {
+      border: 0;
+      cursor: pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .import-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 14px;
+      border: 1px solid #cbd7cd;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, .62);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .import-button:hover { border-color: var(--green); background: var(--white); transform: translateY(-1px); }
+    .import-button span { color: var(--green); font-size: 17px; line-height: 12px; }
+    #excel-file { display: none; }
+
+    main { padding: 45px 0 62px; animation: enter .55s ease both; }
+    @keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .workspace-layout { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 36px; align-items: start; }
+    .learning-sidebar { position: sticky; top: 24px; padding-top: 5px; }
+    .sidebar-label { margin: 0 0 12px 10px; color: #859087; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; }
+    .mode-tabs { display: grid; gap: 6px; }
+    .mode-tab { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 9px; width: 100%; min-height: 54px; padding: 8px 10px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #596a60; cursor: pointer; text-align: left; transition: background .18s ease, border-color .18s ease, color .18s ease; }
+    .mode-tab:hover { background: rgba(255,255,255,.65); }
+    .mode-tab[aria-selected="true"] { border-color: #dbe5dc; background: white; color: var(--green-dark); box-shadow: 0 5px 18px rgba(29,57,45,.06); }
+    .tab-number { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 5px; background: #e9efea; color: #6b7c71; font-family: Georgia, serif; font-size: 12px; }
+    .mode-tab[aria-selected="true"] .tab-number { background: var(--green); color: white; }
+    .tab-name { font-size: 12px; font-weight: 700; line-height: 1.35; }
+    .tab-count { min-width: 22px; color: #829087; font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+    .workspace-content { min-width: 0; }
+
+    .heading-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
+    .eyebrow { margin: 0 0 10px; color: var(--coral); font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+    h1 { margin: 0; font-family: "Segoe UI", Tahoma, sans-serif; font-size: 36px; font-weight: 600; letter-spacing: 0; line-height: 1.15; }
+    .heading-note { max-width: 245px; margin: 0 0 3px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .study-layout { display: grid; width: min(100%, 1152px); grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: stretch; margin-inline: auto; }
+    .practice-toolbar { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 0 14px; border-bottom: 1px solid var(--line); }
+    .practice-switch, .quiz-direction-switch { display: inline-flex; align-items: center; gap: 3px; padding: 4px; border: 1px solid #dfe6df; border-radius: 7px; background: rgba(255,255,255,.62); }
+    .practice-button { min-height: 34px; padding: 0 13px; border: 0; border-radius: 5px; background: transparent; color: #64736a; cursor: pointer; font-size: 12px; font-weight: 700; }
+    .practice-button[aria-pressed="true"] { background: var(--green); color: white; box-shadow: 0 2px 6px rgba(24,71,55,.14); }
+    .practice-button:focus-visible, .quiz-option:focus-visible, .quiz-action:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+    .study-column { min-width: 0; }
+    .session-bar { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 13px; color: var(--muted); font-size: 12px; }
+    .session-title { color: var(--ink); font-weight: 800; }
+    .progress-track { height: 4px; margin-bottom: 16px; overflow: hidden; border-radius: 9px; background: #dfe7df; }
+    .progress-value { width: 0; height: 100%; border-radius: inherit; background: var(--green); transition: width .35s ease; }
+
+    .card-scene { min-height: 400px; perspective: 1200px; overflow-anchor: none; }
+    .flashcard {
+      position: relative;
+      min-height: 400px;
+      border: 1px solid rgba(33, 77, 59, .12);
+      border-radius: 9px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+      transform-style: preserve-3d;
+      transform-origin: center center;
+      will-change: transform;
+      transition: transform .58s cubic-bezier(.2, .75, .25, 1), box-shadow .2s ease;
+    }
+    .flashcard:hover { box-shadow: 0 28px 78px rgba(29, 57, 45, .16); }
+    .flashcard.is-flipped { transform: rotateY(180deg); }
+    .flashcard.verb-mode { min-height: 500px; }
+    .card-face {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 36px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      text-align: center;
+    }
+    .card-back { transform: rotateY(180deg); background: #fbfcfa; border-radius: 9px; }
+    .face-label { position: absolute; top: 25px; left: 27px; color: #829087; font-size: 10px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; }
+    .face-index { position: absolute; top: 25px; right: 27px; color: #a0aaa3; font-size: 11px; font-variant-numeric: tabular-nums; }
+    .word { max-width: 100%; overflow-wrap: anywhere; font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 5vw, 52px); line-height: 1.18; }
+    .word.de { color: var(--green-dark); }
+    .answer-details { width: min(100%, 490px); margin-top: 6px; text-align: left; }
+    .flashcard.verb-mode .noun-details, .flashcard:not(.verb-mode) .verb-details { display: none; }
+    .verb-details { width: min(100%, 490px); margin-top: 6px; text-align: left; }
+    .verb-root { padding: 8px 0; border-bottom: 1px solid #e7ece7; }
+    .verb-root-label, .verb-meaning-label { margin-bottom: 5px; color: #829087; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; }
+    .verb-root-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .verb-root-value { color: var(--green-dark); font-family: Georgia, "Times New Roman", serif; font-size: 18px; }
+    .verb-form-row { display: grid; grid-template-columns: 90px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 39px; border-bottom: 1px solid #e7ece7; }
+    .verb-pronoun { color: #718078; font-size: 11px; font-weight: 700; }
+    .verb-conjugation { min-width: 0; color: var(--green-dark); font-family: Georgia, "Times New Roman", serif; font-size: 17px; overflow-wrap: anywhere; }
+    .verb-form-row .speaker-group { gap: 5px; }
+    .verb-form-row .speaker-button { width: 30px; height: 30px; flex-basis: 30px; }
+    .verb-form-row .speaker-button svg { width: 15px; height: 15px; }
+    .verb-meaning { padding-top: 9px; color: #69776f; font-size: 15px; }
+    .answer-row { padding: 11px 0; border-bottom: 1px solid #e7ece7; }
+    .flashcard.no-plural .plural-row { display: none; }
+    .answer-label { margin-bottom: 7px; color: #829087; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; }
+    .answer-value { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--green-dark); font-family: Georgia, "Times New Roman", serif; font-size: 23px; line-height: 1.3; overflow-wrap: anywhere; }
+    .answer-meaning { color: #69776f; font-family: "Trebuchet MS", "Segoe UI", sans-serif; font-size: 16px; }
+    .speaker-group { display: flex; flex: 0 0 auto; align-items: center; gap: 7px; }
+    .speaker-button { flex: 0 0 36px; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid #d8e3d9; border-radius: 50%; background: #f5f8f4; color: var(--green); cursor: pointer; transition: background .18s ease, transform .18s ease; }
+    .speaker-button:hover { background: var(--mint); transform: scale(1.06); }
+    .speaker-button:focus-visible, .flip-hint:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+    .speaker-button svg { width: 17px; height: 17px; }
+    .speaker-button.slow { position: relative; }
+    .speed-badge { position: absolute; right: -5px; bottom: -4px; padding: 1px 3px; border: 1px solid #d8e3d9; border-radius: 5px; background: white; color: var(--green-dark); font-family: "Trebuchet MS", "Segoe UI", sans-serif; font-size: 8px; font-weight: 800; line-height: 1.2; }
+    .flip-hint { position: absolute; bottom: 23px; padding: 8px 12px; border-radius: 5px; background: #f1f5f0; color: #607169; font-size: 11px; }
+    .flip-hint:hover { background: var(--mint); }
+
+    .card-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 17px; }
+    .nav-controls, .rating-controls { display: flex; align-items: center; gap: 9px; }
+    .icon-button {
+      width: 40px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(255,255,255,.72);
+      font-size: 18px;
+    }
+    .icon-button:hover { background: white; border-color: #a9bbae; }
+    .icon-button:disabled { opacity: .4; cursor: default; }
+    .rating-label { margin-right: 3px; color: var(--muted); font-size: 11px; }
+    .rating-button { min-height: 38px; padding: 0 14px; border: 1px solid transparent; border-radius: 6px; font-size: 12px; font-weight: 800; }
+    .rating-button:hover { transform: translateY(-1px); }
+    .rating-hard { border-color: #ead6cd; background: var(--coral-soft); color: #a84c39; }
+    .rating-known { background: var(--green); color: white; }
+    .rating-known:hover { background: var(--green-dark); }
+
+    .quiz-view { min-height: 400px; padding: 0 2px; }
+    .quiz-prompt-block { display: grid; min-height: 150px; place-content: center; gap: 9px; padding: 24px; text-align: center; }
+    .quiz-prompt-label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .quiz-prompt-line { display: flex; align-items: center; justify-content: center; gap: 12px; min-width: 0; }
+    .quiz-prompt { color: var(--green-dark); font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 4vw, 46px); line-height: 1.2; overflow-wrap: anywhere; }
+    .quiz-prompt-meaning { color: var(--muted); font-size: 15px; line-height: 1.4; }
+    .quiz-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .quiz-option-row { display: flex; align-items: center; gap: 7px; min-width: 0; }
+    .quiz-option { min-height: 62px; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,.82); cursor: pointer; text-align: left; transition: border-color .16s ease, background .16s ease, transform .16s ease; }
+    .quiz-option-row .quiz-option { flex: 1; min-width: 0; }
+    .quiz-option-row.is-audio .quiz-option { justify-content: flex-start; }
+    .quiz-speaker { flex: 0 0 34px; width: 34px; height: 34px; }
+    .quiz-option:hover:not(:disabled) { transform: translateY(-1px); border-color: #9fb6a4; background: white; }
+    .quiz-option:disabled { cursor: default; }
+    .quiz-option-key { flex: 0 0 26px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 5px; background: #edf2ed; color: #68786d; font-size: 11px; font-weight: 800; }
+    .quiz-option-text { min-width: 0; overflow-wrap: anywhere; color: var(--ink); font-size: 13px; line-height: 1.4; }
+    .quiz-option.is-correct { border-color: #87ad91; background: #eaf3eb; }
+    .quiz-option.is-correct .quiz-option-key { background: var(--green); color: white; }
+    .quiz-option.is-wrong { border-color: #d98a77; background: #fbefeb; }
+    .quiz-feedback { min-height: 25px; margin: 12px 2px 0; color: var(--muted); font-size: 12px; }
+    .quiz-feedback.is-correct { color: var(--green); font-weight: 700; }
+    .quiz-feedback.is-wrong { color: #a84c39; font-weight: 700; }
+    .quiz-footer { display: flex; justify-content: flex-end; margin-top: 12px; }
+    .quiz-action { min-height: 38px; padding: 0 16px; border: 0; border-radius: 6px; background: var(--green); color: white; cursor: pointer; font-size: 12px; font-weight: 800; }
+    .quiz-action:hover:not(:disabled) { background: var(--green-dark); }
+    .quiz-action:disabled { background: #cbd6cc; color: #758178; cursor: default; }
+    .quiz-results { padding: 34px 12px; text-align: center; }
+    .quiz-results h2 { margin: 0 0 8px; font-size: 22px; }
+    .quiz-score { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+    .quiz-missed { max-width: 580px; margin: 0 auto 22px; padding: 0; list-style: none; text-align: left; }
+    .quiz-missed li { padding: 10px 0; border-top: 1px solid var(--line); color: #68766d; font-size: 12px; line-height: 1.5; }
+    .quiz-result-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+    .quiz-action.secondary { border: 1px solid #cbd7cd; background: white; color: var(--green-dark); }
+    .quiz-action.secondary:hover { background: var(--mint); }
+
+    .side-panel { display: flex; flex-direction: column; padding: 21px; border: 1px solid rgba(33, 77, 59, .12); border-radius: 8px; background: rgba(255,255,255,.67); }
+    .side-title { margin: 0 0 4px; font-family: "Segoe UI", Tahoma, sans-serif; font-size: 20px; font-weight: 600; }
+    .side-subtitle { margin: 0 0 20px; color: var(--muted); font-size: 11px; }
+    .stat-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-top: 1px solid #e8ede8; font-size: 12px; }
+    .stat-name { color: #637168; }
+    .stat-value { min-width: 30px; color: var(--ink); font-size: 16px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+    .source-note { margin-top: auto; padding-top: 18px; color: #7d8981; font-size: 10px; line-height: 1.6; }
+    .source-note strong { color: #57665d; font-weight: 700; }
+
+    .toast { position: fixed; right: 24px; bottom: 22px; z-index: 3; max-width: min(390px, calc(100% - 32px)); padding: 12px 16px; border-radius: 6px; background: var(--ink); color: white; box-shadow: 0 10px 35px rgba(0,0,0,.15); font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 760px) {
+      .app-shell { width: min(100% - 32px, 560px); }
+      .topbar { height: 70px; }
+      main { padding-top: 33px; }
+      .workspace-layout { grid-template-columns: 1fr; gap: 24px; }
+      .learning-sidebar { position: static; padding-top: 0; }
+      .sidebar-label { margin-left: 2px; }
+      .mode-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .mode-tab { min-height: 64px; grid-template-columns: 28px minmax(0, 1fr) auto; padding: 8px; }
+      .tab-name { font-size: 11px; }
+      .heading-row { align-items: flex-start; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+      h1 { font-size: 32px; }
+      .heading-note { max-width: 390px; }
+      .study-layout { grid-template-columns: 1fr; gap: 17px; }
+      .practice-toolbar { align-items: stretch; flex-direction: column; }
+      .practice-switch, .quiz-direction-switch { width: 100%; }
+      .practice-button { flex: 1; padding-inline: 8px; }
+      .quiz-options { grid-template-columns: 1fr; gap: 8px; }
+      .quiz-option { min-height: 52px; }
+      .card-scene, .flashcard { min-height: 360px; }
+      .flashcard.verb-mode { min-height: 400px; }
+      .flashcard.verb-mode .verb-root { padding: 5px 0; }
+      .flashcard.verb-mode .verb-form-row { min-height: 31px; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 5px; }
+      .flashcard.verb-mode .verb-form-row .speaker-group { gap: 3px; }
+      .flashcard.verb-mode .verb-form-row .speaker-button { width: 27px; height: 27px; flex-basis: 27px; }
+      .flashcard.verb-mode .verb-form-row .speaker-button svg { width: 14px; height: 14px; }
+      .flashcard.verb-mode .verb-meaning { padding-top: 5px; }
+      .side-panel { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
+      .side-title, .side-subtitle, .source-note { grid-column: 1 / -1; }
+      .side-subtitle { margin-bottom: 10px; }
+      .stat-row { padding: 10px 0; }
+      .source-note { margin-top: 7px; padding-top: 11px; }
+    }
+
+    @media (max-width: 450px) {
+      .brand-caption { display: none; }
+      .import-button { gap: 6px; padding: 9px 10px; font-size: 11px; }
+      .card-scene, .flashcard { min-height: 335px; }
+      .card-face { padding: 28px 20px; }
+      .face-label { top: 20px; left: 19px; }
+      .face-index { top: 20px; right: 19px; }
+      .rating-label { display: none; }
+      .rating-controls { gap: 6px; }
+      .rating-button { padding: 0 10px; font-size: 11px; }
+    }
+
+    @media (max-height: 850px) {
+      .flashcard.verb-mode { min-height: 400px; }
+      .flashcard.verb-mode .card-face { padding: 28px 30px; }
+      .flashcard.verb-mode .verb-root { padding: 4px 0; }
+      .flashcard.verb-mode .verb-form-row { min-height: 27px; gap: 5px; }
+      .flashcard.verb-mode .verb-form-row .speaker-group { gap: 3px; }
+      .flashcard.verb-mode .verb-form-row .speaker-button { width: 26px; height: 26px; flex-basis: 26px; }
+      .flashcard.verb-mode .verb-form-row .speaker-button svg { width: 14px; height: 14px; }
+      .flashcard.verb-mode .verb-meaning { padding-top: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="Wort für Wort">
+        <div class="brand-mark" aria-hidden="true">W</div>
+        <div>
+          <div class="brand-name">Wort für Wort</div>
+          <div class="brand-caption">Học từ vựng tiếng Đức</div>
+        </div>
+      </div>
+      <label class="import-button" id="import-label" for="excel-file" title="Chọn workbook cho nhóm đang học">
+        <span aria-hidden="true">+</span> Nhập Excel
+      </label>
+      <input id="excel-file" type="file" accept=".xlsx,.xls,.xlsm">
+    </header>
+
+    <main tabindex="-1">
+      <div class="workspace-layout">
+        <aside class="learning-sidebar" aria-label="Chọn nhóm học">
+          <p class="sidebar-label">HỌC THEO NHÓM</p>
+          <div class="mode-tabs" role="tablist" aria-label="Nhóm học">
+            <button class="mode-tab" id="tab-plural" type="button" role="tab" aria-selected="true" aria-controls="study-panel" data-mode="plural">
+              <span class="tab-number" aria-hidden="true">01</span><span class="tab-name">Danh từ có dạng số nhiều</span><span class="tab-count" id="plural-count">1</span>
+            </button>
+            <button class="mode-tab" id="tab-no-plural" type="button" role="tab" aria-selected="false" aria-controls="study-panel" data-mode="noPlural" tabindex="-1">
+              <span class="tab-number" aria-hidden="true">02</span><span class="tab-name">Danh từ không có dạng số nhiều</span><span class="tab-count" id="no-plural-count">3</span>
+            </button>
+            <button class="mode-tab" id="tab-verbs" type="button" role="tab" aria-selected="false" aria-controls="study-panel" data-mode="verbs" tabindex="-1">
+              <span class="tab-number" aria-hidden="true">03</span><span class="tab-name">Động từ bất quy tắc</span><span class="tab-count" id="verbs-count">2</span>
+            </button>
+            <button class="mode-tab" id="tab-regular-verbs" type="button" role="tab" aria-selected="false" aria-controls="study-panel" data-mode="regularVerbs" tabindex="-1">
+              <span class="tab-number" aria-hidden="true">04</span><span class="tab-name">Động từ có quy tắc</span><span class="tab-count" id="regular-verbs-count">6</span>
+            </button>
+          </div>
+        </aside>
+
+        <div class="workspace-content">
+          <section class="heading-row">
+            <div>
+              <p class="eyebrow">Bộ thẻ của bạn</p>
+              <h1 id="page-title">Danh từ có dạng số nhiều</h1>
+            </div>
+            <p class="heading-note">Lật thẻ, nhớ từ, rồi tự đánh dấu để theo dõi buổi học.</p>
+          </section>
+
+          <section class="study-layout" id="study-panel" role="tabpanel" aria-labelledby="tab-plural" aria-label="Khu vực học flashcard">
+        <div class="practice-toolbar" aria-label="Chế độ học">
+          <div class="practice-switch" role="group" aria-label="Chọn hình thức học">
+            <button class="practice-button" id="flashcard-mode-button" type="button" aria-pressed="true">Flashcard</button>
+            <button class="practice-button" id="quiz-mode-button" type="button" aria-pressed="false">Trắc nghiệm</button>
+          </div>
+          <div class="quiz-direction-switch" id="quiz-directions" role="group" aria-label="Chiều câu hỏi" hidden>
+            <button class="practice-button" type="button" data-direction="deToVi" aria-pressed="true">Đức → Việt</button>
+            <button class="practice-button" type="button" data-direction="viToDe" aria-pressed="false">Việt → Đức</button>
+            <button class="practice-button" type="button" data-direction="audio" aria-pressed="false">Nghe phát âm</button>
+          </div>
+        </div>
+        <div class="study-column">
+          <div id="flashcard-view">
+          <div class="session-bar">
+            <span class="session-title">Đang học</span>
+            <span id="card-counter">1 / 1</span>
+          </div>
+          <div class="progress-track" aria-label="Tiến độ học"><div class="progress-value" id="progress-value"></div></div>
+          <div class="card-scene">
+            <article class="flashcard" id="flashcard">
+              <div class="card-face card-front">
+                <span class="face-label">Tiếng Đức</span>
+                <span class="face-index" id="front-index">01</span>
+                <div class="word de" id="front-word"></div>
+                <button class="flip-hint" type="button" data-flip>Xem đáp án</button>
+              </div>
+              <div class="card-face card-back">
+                <span class="face-label">Đáp án</span>
+                <span class="face-index" id="back-index">01</span>
+                <div class="answer-details noun-details">
+                  <div class="answer-row">
+                    <div class="answer-label">Từ gốc</div>
+                    <div class="answer-value"><span id="back-root"></span><span class="speaker-group"><button class="speaker-button" type="button" data-speak="root" aria-label="Phát âm từ gốc tốc độ thường" title="Phát âm tốc độ thường"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></button><button class="speaker-button slow" type="button" data-speak="root" data-rate="0.5" aria-label="Phát âm từ gốc chậm, tốc độ 0.5 lần" title="Phát âm chậm 0.5×"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg><span class="speed-badge" aria-hidden="true">0.5×</span></button></span></div>
+                  </div>
+                  <div class="answer-row plural-row">
+                    <div class="answer-label">Dạng số nhiều</div>
+                    <div class="answer-value"><span id="back-plural"></span><span class="speaker-group"><button class="speaker-button" type="button" data-speak="plural" aria-label="Phát âm dạng số nhiều tốc độ thường" title="Phát âm tốc độ thường"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></button><button class="speaker-button slow" type="button" data-speak="plural" data-rate="0.5" aria-label="Phát âm dạng số nhiều chậm, tốc độ 0.5 lần" title="Phát âm chậm 0.5×"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg><span class="speed-badge" aria-hidden="true">0.5×</span></button></span></div>
+                  </div>
+                  <div class="answer-row">
+                    <div class="answer-label">Nghĩa tiếng Việt</div>
+                    <div class="answer-value answer-meaning" id="back-meaning"></div>
+                  </div>
+                </div>
+                <div class="verb-details" id="verb-details" aria-label="Các dạng chia động từ">
+                  <div class="verb-root"><div class="verb-root-label">Động từ gốc</div><div class="verb-root-line"><span class="verb-root-value" id="verb-root-value"></span><span class="speaker-group" id="verb-root-speakers"></span></div></div>
+                  <div id="verb-forms"></div>
+                  <div class="verb-meaning-label" style="margin-top: 9px">Nghĩa tiếng Việt</div>
+                  <div class="verb-meaning" id="verb-meaning"></div>
+                </div>
+                <button class="flip-hint" type="button" data-flip>Quay lại mặt trước</button>
+              </div>
+            </article>
+          </div>
+          <div class="card-controls">
+            <div class="nav-controls" aria-label="Chuyển thẻ">
+              <button class="icon-button" id="previous-card" type="button" aria-label="Thẻ trước" title="Thẻ trước">←</button>
+              <button class="icon-button" id="next-card" type="button" aria-label="Thẻ tiếp theo" title="Thẻ tiếp theo">→</button>
+            </div>
+            <div class="rating-controls">
+              <span class="rating-label">Bạn đã nhớ?</span>
+              <button class="rating-button rating-hard" id="mark-hard" type="button">Ôn lại</button>
+              <button class="rating-button rating-known" id="mark-known" type="button">Đã nhớ</button>
+            </div>
+          </div>
+          </div>
+
+          <section class="quiz-view" id="quiz-view" aria-label="Trắc nghiệm từ vựng" hidden>
+            <div id="quiz-question-view">
+              <div class="session-bar">
+                <span class="session-title" id="quiz-session-title">Đức → Việt</span>
+                <span id="quiz-counter">1 / 1</span>
+              </div>
+              <div class="progress-track" aria-label="Tiến độ trắc nghiệm"><div class="progress-value" id="quiz-progress-value"></div></div>
+              <div class="quiz-prompt-block">
+                <span class="quiz-prompt-label" id="quiz-prompt-label">Chọn nghĩa tiếng Việt</span>
+                <div class="quiz-prompt-line">
+                  <div class="quiz-prompt" id="quiz-prompt"></div>
+                  <span id="quiz-prompt-audio"></span>
+                </div>
+                <div class="quiz-prompt-meaning" id="quiz-prompt-meaning" hidden></div>
+              </div>
+              <div class="quiz-options" id="quiz-options" role="group" aria-label="Bốn đáp án"></div>
+              <div class="quiz-feedback" id="quiz-feedback" role="status" aria-live="polite" hidden></div>
+              <div class="quiz-footer">
+                <button class="quiz-action" id="quiz-next" type="button" disabled>Câu tiếp theo</button>
+              </div>
+            </div>
+            <section class="quiz-results" id="quiz-results" aria-live="polite" hidden>
+              <p class="eyebrow">Đã hoàn thành đủ lượt</p>
+              <h2>Kết quả trắc nghiệm</h2>
+              <p class="quiz-score" id="quiz-score"></p>
+              <ul class="quiz-missed" id="quiz-missed"></ul>
+              <div class="quiz-result-actions">
+                <button class="quiz-action" id="quiz-restart" type="button">Làm lại lượt này</button>
+                <button class="quiz-action secondary" id="return-to-flashcards" type="button">Quay lại flashcard</button>
+              </div>
+            </section>
+          </section>
+        </div>
+
+        <aside class="side-panel" aria-label="Thống kê buổi học">
+          <h2 class="side-title">Buổi học này</h2>
+          <p class="side-subtitle">Tiến độ được lưu trên thiết bị này</p>
+          <div class="stat-row"><span class="stat-name">Tổng số thẻ</span><span class="stat-value" id="total-stat">1</span></div>
+          <div class="stat-row"><span class="stat-name">Đã nhớ</span><span class="stat-value" id="known-stat">0</span></div>
+          <div class="stat-row"><span class="stat-name">Cần ôn lại</span><span class="stat-value" id="hard-stat">0</span></div>
+          <div class="source-note"><strong>Nguồn:</strong> <span id="source-name">Vocab/noun.xlsx</span><br><span id="source-description">Cột A là từ gốc; cột B và C là đáp án.</span></div>
+        </aside>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const cardSets = {
+      plural: [{ german: "der Florist", form: "die Floristin", meaning: "người bán hoa" }],
+      noPlural: [
+        { german: "Der Montag", form: "", meaning: "thứ 2" },
+        { german: "Der Dienstag", form: "", meaning: "thứ 3" },
+        { german: "Der Mittwosh", form: "", meaning: "thứ 4" }
+      ],
+      verbs: [
+        { german: "sein", ich: "bin", du: "bist", erSieEs: "ist", wir: "sind", ihr: "seid", sieSie: "sind", meaning: "thì, là, ở" },
+        { german: "haben", ich: "habe", du: "hast", erSieEs: "hat", wir: "haben", ihr: "habt", sieSie: "haben", meaning: "có" }
+      ],
+      regularVerbs: [
+        { german: "machen", form: "", meaning: "làm" },
+        { german: "wohnen", form: "", meaning: "sống, cư trú, trọ tại" },
+        { german: "kommen", form: "", meaning: "đến, đến từ" },
+        { german: "heißen", form: "", meaning: "tên là" },
+        { german: "mieten", form: "", meaning: "thuê" },
+        { german: "arbeiten", form: "", meaning: "làm việc" }
+      ]
+    };
+    const sourceNames = { plural: "Vocab/noun.xlsx", noPlural: "Vocab/thungay.xlsx", verbs: "Vocab/dongtubatquytac.xlsx", regularVerbs: "Vocab/dongtucoquytac.xlsx" };
+    const modeTitles = {
+      plural: "Danh từ có dạng số nhiều",
+      noPlural: "Danh từ không có dạng số nhiều",
+      verbs: "Động từ bất quy tắc",
+      regularVerbs: "Động từ có quy tắc"
+    };
+    const verbForms = [
+      ["ich", "ich", "Ich"],
+      ["du", "du", "Du"],
+      ["erSieEs", "er/sie/es", "Er, sie, es"],
+      ["wir", "wir", "Wir"],
+      ["ihr", "ihr", "Ihr"],
+      ["sieSie", "sie/Sie", "Sie, sie"]
+    ];
+    const storageKey = "wort-fur-wort-progress-v1";
+    let activeMode = "plural";
+    let cards = cardSets[activeMode];
+    let currentIndex = 0;
+    let practiceMode = "flashcards";
+    let quizDirection = "deToVi";
+    let quizDeck = [];
+    let quizIndex = 0;
+    let quizCorrect = 0;
+    let quizMistakes = [];
+    let quizAnswered = false;
+    let quizOptions = [];
+    const previousQuizOrder = {};
+    let progress = loadProgress();
+    let toastTimer;
+
+    const cardElement = document.getElementById("flashcard");
+    const fileInput = document.getElementById("excel-file");
+    document.querySelector("main").focus({ preventScroll: true });
+
+    function loadProgress() {
+      try { return JSON.parse(localStorage.getItem(storageKey)) || {}; }
+      catch { return {}; }
+    }
+
+    function saveProgress() {
+      try { localStorage.setItem(storageKey, JSON.stringify(progress)); }
+      catch { showToast("Không thể lưu tiến độ trong trình duyệt này."); }
+    }
+
+    function cardKey(card) { return `${card.german}\u0000${card.form}\u0000${card.meaning}`; }
+
+    function renderCard() {
+      if (!cards.length) return;
+      const card = cards[currentIndex];
+      cardElement.classList.remove("is-flipped");
+      document.getElementById("front-word").textContent = card.german;
+      document.getElementById("back-root").textContent = card.german;
+      document.getElementById("back-plural").textContent = card.form;
+      document.getElementById("back-meaning").textContent = card.meaning;
+      document.getElementById("verb-root-value").textContent = card.german;
+      document.getElementById("verb-meaning").textContent = card.meaning;
+      renderVerbForms(card);
+      document.getElementById("card-counter").textContent = `${currentIndex + 1} / ${cards.length}`;
+      const indexLabel = String(currentIndex + 1).padStart(2, "0");
+      document.getElementById("front-index").textContent = indexLabel;
+      document.getElementById("back-index").textContent = indexLabel;
+      updateStats();
+    }
+
+    function switchMode(mode) {
+      if (!cardSets[mode]) return;
+      activeMode = mode;
+      cards = cardSets[mode];
+      currentIndex = 0;
+      cardElement.classList.toggle("no-plural", mode === "noPlural" || mode === "regularVerbs");
+      cardElement.classList.toggle("verb-mode", mode === "verbs");
+      document.querySelectorAll(".mode-tab").forEach(tab => {
+        const selected = tab.dataset.mode === mode;
+        tab.setAttribute("aria-selected", String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+      });
+      const tab = document.querySelector(`.mode-tab[data-mode="${mode}"]`);
+      document.getElementById("study-panel").setAttribute("aria-labelledby", tab.id);
+      document.getElementById("page-title").textContent = modeTitles[mode];
+      document.getElementById("source-name").textContent = sourceNames[mode];
+      document.getElementById("source-description").textContent = mode === "plural" ? "Cột A là từ gốc; cột B và C là đáp án." : mode === "noPlural" ? "Cột A là từ; cột B là nghĩa tiếng Việt." : mode === "regularVerbs" ? "Cột A là động từ; cột B là nghĩa tiếng Việt." : "Cột A là động từ gốc; B-G là cách chia; H là nghĩa.";
+      document.getElementById("import-label").title = mode === "plural" ? "Chọn Excel: cột A từ gốc, B dạng số nhiều, C nghĩa" : mode === "noPlural" || mode === "regularVerbs" ? "Chọn Excel: cột A từ tiếng Đức, B nghĩa tiếng Việt" : "Chọn Excel: cột A động từ gốc, B-G cách chia, H nghĩa";
+      renderCard();
+      if (practiceMode === "quiz") startQuiz();
+    }
+
+    function renderVerbForms(card) {
+      const container = document.getElementById("verb-forms");
+      container.replaceChildren();
+      const rootSpeakers = document.getElementById("verb-root-speakers");
+      rootSpeakers.replaceChildren();
+      if (activeMode !== "verbs") return;
+      rootSpeakers.append(createSpeakerButton("root", "động từ gốc", 1), createSpeakerButton("root", "động từ gốc", 0.5));
+      for (const [field, pronoun, label] of verbForms) {
+        const row = document.createElement("div");
+        row.className = "verb-form-row";
+        const pronounElement = document.createElement("span");
+        pronounElement.className = "verb-pronoun";
+        pronounElement.textContent = pronoun;
+        const conjugation = document.createElement("span");
+        conjugation.className = "verb-conjugation";
+        conjugation.textContent = card[field] || "-";
+        const speakers = document.createElement("span");
+        speakers.className = "speaker-group";
+        speakers.append(createSpeakerButton(field, label, 1), createSpeakerButton(field, label, 0.5));
+        row.append(pronounElement, conjugation, speakers);
+        container.append(row);
+      }
+    }
+
+    function createSpeakerButton(field, label, rate) {
+      const button = document.createElement("button");
+      const slow = rate < 1;
+      button.type = "button";
+      button.className = `speaker-button${slow ? " slow" : ""}`;
+      button.dataset.speak = field;
+      if (slow) button.dataset.rate = String(rate);
+      button.setAttribute("aria-label", `Phát âm ${label}${slow ? " chậm" : ""}`);
+      button.title = slow ? "Phát âm chậm 0.5×" : "Phát âm tốc độ thường";
+      button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>';
+      if (slow) {
+        const badge = document.createElement("span");
+        badge.className = "speed-badge";
+        badge.setAttribute("aria-hidden", "true");
+        badge.textContent = "0.5×";
+        button.append(badge);
+      }
+      return button;
+    }
+
+    function updateStats() {
+      const known = cards.filter(card => progress[cardKey(card)] === "known").length;
+      const hard = cards.filter(card => progress[cardKey(card)] === "hard").length;
+      document.getElementById("total-stat").textContent = cards.length;
+      document.getElementById("known-stat").textContent = known;
+      document.getElementById("hard-stat").textContent = hard;
+      document.getElementById("progress-value").style.width = `${cards.length ? known / cards.length * 100 : 0}%`;
+      document.getElementById("previous-card").disabled = cards.length < 2;
+      document.getElementById("next-card").disabled = cards.length < 2;
+    }
+
+    function flipCard() { cardElement.classList.toggle("is-flipped"); }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
+    }
+
+    function rateCard(rating) {
+      if (!cardElement.classList.contains("is-flipped")) {
+        showToast("Lật thẻ xem đáp án trước nhé.");
+        return;
+      }
+      progress[cardKey(cards[currentIndex])] = rating;
+      saveProgress();
+      updateStats();
+      showToast(rating === "known" ? "Đã ghi nhận: bạn nhớ từ này." : "Đã ghi nhận: từ này cần ôn lại.");
+      if (cards.length > 1) moveCard(1);
+    }
+
+    function moveCard(direction) {
+      currentIndex = (currentIndex + direction + cards.length) % cards.length;
+      renderCard();
+    }
+
+    function setPracticeMode(mode) {
+      practiceMode = mode;
+      const isQuiz = mode === "quiz";
+      document.getElementById("flashcard-mode-button").setAttribute("aria-pressed", String(!isQuiz));
+      document.getElementById("quiz-mode-button").setAttribute("aria-pressed", String(isQuiz));
+      document.getElementById("quiz-directions").hidden = !isQuiz;
+      document.getElementById("flashcard-view").hidden = isQuiz;
+      document.getElementById("quiz-view").hidden = !isQuiz;
+      document.querySelector(".heading-note").textContent = isQuiz ? "Chọn một đáp án cho từng từ. Hoàn thành đủ lượt để xem kết quả." : "Lật thẻ, nhớ từ, rồi tự đánh dấu để theo dõi buổi học.";
+      if (isQuiz) startQuiz();
+    }
+
+    function startQuiz(direction = quizDirection) {
+      quizDirection = direction;
+      const entries = cards.map((card, index) => ({ card, index }));
+      for (let index = entries.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [entries[index], entries[randomIndex]] = [entries[randomIndex], entries[index]];
+      }
+      const lastOrder = previousQuizOrder[activeMode];
+      const unchanged = lastOrder && entries.every((entry, index) => entry.index === lastOrder[index]);
+      if (entries.length > 1 && unchanged) {
+        const offset = 1 + Math.floor(Math.random() * (entries.length - 1));
+        entries.push(...entries.splice(0, offset));
+      }
+      previousQuizOrder[activeMode] = entries.map(entry => entry.index);
+      quizDeck = entries.map(entry => entry.card);
+      quizIndex = 0;
+      quizCorrect = 0;
+      quizMistakes = [];
+      quizAnswered = false;
+      document.querySelectorAll("[data-direction]").forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.direction === quizDirection));
+      });
+      renderQuizQuestion();
+    }
+
+    function quizValue(card, direction) {
+      return direction === "deToVi" ? card.meaning : card.german;
+    }
+
+    function buildQuizOptions(card) {
+      const correct = quizValue(card, quizDirection);
+      const values = [];
+      const seen = new Set([correct]);
+      const candidateCards = [
+        ...cards.filter(candidate => candidate !== card),
+        ...Object.values(cardSets).flat().filter(candidate => candidate !== card)
+      ];
+      for (const candidate of candidateCards) {
+        const value = quizValue(candidate, quizDirection);
+        if (!value || seen.has(value)) continue;
+        seen.add(value);
+        values.push(value);
+      }
+      for (let index = values.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [values[index], values[randomIndex]] = [values[randomIndex], values[index]];
+      }
+      return [...values.slice(0, 3), correct]
+        .map(value => ({ value, correct: value === correct }))
+        .sort(() => Math.random() - 0.5);
+    }
+
+    function renderQuizQuestion() {
+      if (!quizDeck.length) return;
+      if (quizIndex >= quizDeck.length) {
+        renderQuizResults();
+        return;
+      }
+      const card = quizDeck[quizIndex];
+      quizAnswered = false;
+      quizOptions = buildQuizOptions(card);
+      document.getElementById("quiz-question-view").hidden = false;
+      document.getElementById("quiz-results").hidden = true;
+      document.getElementById("quiz-session-title").textContent = quizDirection === "deToVi" ? "Đức → Việt" : quizDirection === "viToDe" ? "Việt → Đức" : "Nghe phát âm";
+      document.getElementById("quiz-counter").textContent = `${quizIndex + 1} / ${quizDeck.length}`;
+      document.getElementById("quiz-progress-value").style.width = `${quizIndex / quizDeck.length * 100}%`;
+      document.getElementById("quiz-prompt-label").textContent = quizDirection === "deToVi" ? "Chọn nghĩa tiếng Việt" : quizDirection === "viToDe" ? "Chọn từ tiếng Đức" : "Nghe các lựa chọn và chọn cách phát âm khớp với từ này";
+      document.getElementById("quiz-prompt").textContent = quizDirection === "viToDe" ? card.meaning : card.german;
+      const promptMeaning = document.getElementById("quiz-prompt-meaning");
+      promptMeaning.textContent = card.meaning;
+      promptMeaning.hidden = quizDirection !== "audio";
+      const promptAudio = document.getElementById("quiz-prompt-audio");
+      promptAudio.replaceChildren();
+      if (quizDirection === "deToVi") promptAudio.append(createQuizSpeakerButton(card.german));
+      const optionsContainer = document.getElementById("quiz-options");
+      optionsContainer.replaceChildren();
+      quizOptions.forEach((option, index) => {
+        const row = document.createElement("div");
+        row.className = "quiz-option-row";
+        if (quizDirection === "audio") row.classList.add("is-audio");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quiz-option";
+        button.dataset.optionIndex = String(index);
+        const key = document.createElement("span");
+        key.className = "quiz-option-key";
+        key.textContent = String(index + 1);
+        const text = document.createElement("span");
+        text.className = "quiz-option-text";
+        text.textContent = quizDirection === "audio" ? "Chọn cách phát âm này" : option.value;
+        button.append(key, text);
+        if (quizDirection === "audio") row.append(createQuizSpeakerButton(option.value, `Nghe lựa chọn ${index + 1}`));
+        button.addEventListener("click", () => answerQuiz(index));
+        row.append(button);
+        if (quizDirection === "viToDe") row.append(createQuizSpeakerButton(option.value));
+        optionsContainer.append(row);
+      });
+      const feedback = document.getElementById("quiz-feedback");
+      feedback.hidden = true;
+      feedback.className = "quiz-feedback";
+      feedback.textContent = "";
+      document.getElementById("quiz-next").disabled = true;
+    }
+
+    function createQuizSpeakerButton(text, accessibleLabel = `Phát âm ${text}`) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "speaker-button quiz-speaker";
+      button.dataset.quizSpeak = text;
+      button.setAttribute("aria-label", accessibleLabel);
+      button.title = "Phát âm tiếng Đức";
+      button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>';
+      return button;
+    }
+
+    function answerQuiz(optionIndex) {
+      if (quizAnswered) return;
+      const card = quizDeck[quizIndex];
+      const selected = quizOptions[optionIndex];
+      if (!selected) return;
+      quizAnswered = true;
+      const correctOption = quizOptions.find(option => option.correct);
+      const optionButtons = document.querySelectorAll(".quiz-option");
+      optionButtons.forEach((button, index) => {
+        button.disabled = true;
+        if (quizOptions[index].correct) button.classList.add("is-correct");
+        else if (index === optionIndex) button.classList.add("is-wrong");
+      });
+      const feedback = document.getElementById("quiz-feedback");
+      feedback.hidden = false;
+      if (selected.correct) {
+        quizCorrect++;
+        feedback.textContent = "Chính xác!";
+        feedback.classList.add("is-correct");
+      } else {
+        const prompt = quizDirection === "viToDe" ? card.meaning : card.german;
+        quizMistakes.push({ prompt, selected: selected.value, correct: correctOption.value });
+        feedback.textContent = `Chưa đúng. Đáp án là: ${correctOption.value}`;
+        feedback.classList.add("is-wrong");
+      }
+      document.getElementById("quiz-progress-value").style.width = `${(quizIndex + 1) / quizDeck.length * 100}%`;
+      document.getElementById("quiz-next").disabled = false;
+    }
+
+    function advanceQuiz() {
+      if (!quizAnswered) return;
+      quizIndex++;
+      renderQuizQuestion();
+    }
+
+    function renderQuizResults() {
+      document.getElementById("quiz-question-view").hidden = true;
+      document.getElementById("quiz-results").hidden = false;
+      document.getElementById("quiz-counter").textContent = `${quizDeck.length} / ${quizDeck.length}`;
+      document.getElementById("quiz-progress-value").style.width = "100%";
+      document.getElementById("quiz-score").textContent = `Đúng ${quizCorrect} / ${quizDeck.length} câu`;
+      const missedList = document.getElementById("quiz-missed");
+      missedList.replaceChildren();
+      if (!quizMistakes.length) {
+        const item = document.createElement("li");
+        item.textContent = "Không có câu trả lời sai trong lượt này.";
+        missedList.append(item);
+        return;
+      }
+      quizMistakes.forEach(mistake => {
+        const item = document.createElement("li");
+        item.textContent = `${mistake.prompt}: đáp án đúng “${mistake.correct}” (đã chọn “${mistake.selected}”)`;
+        missedList.append(item);
+      });
+    }
+
+    document.querySelectorAll("[data-flip]").forEach(button => button.addEventListener("click", event => {
+      flipCard();
+    }));
+    document.querySelectorAll(".mode-tab").forEach(tab => tab.addEventListener("click", () => switchMode(tab.dataset.mode)));
+    document.addEventListener("click", event => {
+      const button = event.target.closest("[data-speak], [data-quiz-speak]");
+      if (!button) return;
+      if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+        showToast("Trình duyệt này chưa hỗ trợ phát âm tự động.");
+        return;
+      }
+      const field = button.dataset.speak === "root" ? "german" : button.dataset.speak === "plural" ? "form" : button.dataset.speak;
+      const text = button.dataset.quizSpeak || cards[currentIndex][field];
+      if (!text) {
+        showToast("Thẻ này chưa có thông tin để phát âm.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "de-DE";
+      utterance.rate = button.dataset.rate ? Number(button.dataset.rate) : 1;
+      const germanVoice = window.speechSynthesis.getVoices().find(voice => voice.lang.toLowerCase().startsWith("de"));
+      if (germanVoice) utterance.voice = germanVoice;
+      window.speechSynthesis.speak(utterance);
+    });
+    document.getElementById("previous-card").addEventListener("click", () => moveCard(-1));
+    document.getElementById("next-card").addEventListener("click", () => moveCard(1));
+    document.getElementById("mark-hard").addEventListener("click", () => rateCard("hard"));
+    document.getElementById("mark-known").addEventListener("click", () => rateCard("known"));
+    document.getElementById("flashcard-mode-button").addEventListener("click", () => setPracticeMode("flashcards"));
+    document.getElementById("quiz-mode-button").addEventListener("click", () => setPracticeMode("quiz"));
+    document.querySelectorAll("[data-direction]").forEach(button => button.addEventListener("click", () => startQuiz(button.dataset.direction)));
+    document.getElementById("quiz-next").addEventListener("click", advanceQuiz);
+    document.getElementById("quiz-restart").addEventListener("click", () => startQuiz());
+    document.getElementById("return-to-flashcards").addEventListener("click", () => setPracticeMode("flashcards"));
+    document.addEventListener("keydown", event => {
+      if (event.target.closest("input, textarea, select, [contenteditable='true']")) return;
+      if (practiceMode === "quiz") {
+        if (/^[1-4]$/.test(event.key) && !quizAnswered) {
+          event.preventDefault();
+          answerQuiz(Number(event.key) - 1);
+        } else if (event.key === "Enter" && quizAnswered) {
+          event.preventDefault();
+          advanceQuiz();
+        }
+        return;
+      }
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        flipCard();
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        moveCard(1);
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        moveCard(-1);
+      }
+    });
+
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      try {
+        if (!window.XLSX) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+            script.onload = resolve;
+            script.onerror = () => reject(new Error("Không tải được trình đọc Excel. Kiểm tra kết nối mạng."));
+            document.head.appendChild(script);
+          });
+        }
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: "" });
+        const importedCards = rows.map(row => activeMode === "plural" ? ({
+          german: String(row[0] ?? "").trim(),
+          form: String(row[1] ?? "").trim(),
+          meaning: String(row[2] ?? "").trim()
+        }) : activeMode === "noPlural" || activeMode === "regularVerbs" ? ({
+          german: String(row[0] ?? "").trim(),
+          form: "",
+          meaning: String(row[1] ?? "").trim()
+        }) : ({
+          german: String(row[0] ?? "").trim(),
+          ich: String(row[1] ?? "").trim(),
+          du: String(row[2] ?? "").trim(),
+          erSieEs: String(row[3] ?? "").trim(),
+          wir: String(row[4] ?? "").trim(),
+          ihr: String(row[5] ?? "").trim(),
+          sieSie: String(row[6] ?? "").trim(),
+          meaning: String(row[7] ?? "").trim()
+        })).filter(card => card.german && card.meaning);
+        if (!importedCards.length) throw new Error(activeMode === "plural" ? "Không tìm thấy dữ liệu ở cột A, B, C trong sheet đầu tiên." : activeMode === "noPlural" || activeMode === "regularVerbs" ? "Không tìm thấy dữ liệu ở cột A, B trong sheet đầu tiên." : "Không tìm thấy dữ liệu ở cột A-H trong sheet đầu tiên.");
+        cardSets[activeMode] = importedCards;
+        sourceNames[activeMode] = file.name;
+        const countElement = activeMode === "plural" ? "plural-count" : activeMode === "noPlural" ? "no-plural-count" : activeMode === "verbs" ? "verbs-count" : "regular-verbs-count";
+        document.getElementById(countElement).textContent = importedCards.length;
+        document.getElementById("source-name").textContent = file.name;
+        currentIndex = 0;
+        cards = cardSets[activeMode];
+        renderCard();
+        if (practiceMode === "quiz") startQuiz();
+        showToast(`Đã nhập ${cards.length} thẻ từ ${file.name}.`);
+      } catch (error) {
+        showToast(error.message || "Không đọc được file Excel.");
+      } finally {
+        fileInput.value = "";
+      }
+    });
+
+    document.getElementById("plural-count").textContent = cardSets.plural.length;
+    document.getElementById("no-plural-count").textContent = cardSets.noPlural.length;
+    document.getElementById("verbs-count").textContent = cardSets.verbs.length;
+    document.getElementById("regular-verbs-count").textContent = cardSets.regularVerbs.length;
+    switchMode("plural");
+  </script>
+</body>
+</html>
