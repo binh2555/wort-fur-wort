@@ -82,6 +82,11 @@
     }
     .import-button:hover { border-color: var(--green); background: var(--white); transform: translateY(-1px); }
     .import-button span { color: var(--green); font-size: 17px; line-height: 12px; }
+    .import-actions { display: flex; align-items: center; gap: 8px; }
+    .repo-import-button { border-color: var(--green); background: var(--green); color: white; }
+    .repo-import-button span { color: white; }
+    .repo-import-button:hover { border-color: var(--green-dark); background: var(--green-dark); }
+    .repo-import-button:disabled { opacity: .65; cursor: wait; }
     #excel-file { display: none; }
 
     main { padding: 45px 0 62px; animation: enter .55s ease both; }
@@ -112,6 +117,7 @@
     .practice-button[aria-pressed="true"] { background: var(--green); color: white; box-shadow: 0 2px 6px rgba(24,71,55,.14); }
     .practice-button:focus-visible, .quiz-option:focus-visible, .quiz-action:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
     .study-column { min-width: 0; }
+    .empty-state { min-height: 400px; display: grid; place-content: center; padding: 32px; border: 1px dashed #cbd7cd; border-radius: 9px; color: var(--muted); font-size: 14px; text-align: center; }
     .session-bar { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 13px; color: var(--muted); font-size: 12px; }
     .session-title { color: var(--ink); font-weight: 800; }
     .progress-track { height: 4px; margin-bottom: 16px; overflow: hidden; border-radius: 9px; background: #dfe7df; }
@@ -262,6 +268,9 @@
       .practice-toolbar { align-items: stretch; flex-direction: column; }
       .practice-switch, .quiz-direction-switch { width: 100%; }
       .practice-button { flex: 1; padding-inline: 8px; }
+      .topbar { height: auto; min-height: 70px; flex-wrap: wrap; gap: 12px; padding: 12px 0; }
+      .import-actions { width: 100%; }
+      .import-actions .import-button { flex: 1; justify-content: center; }
       .quiz-options { grid-template-columns: 1fr; gap: 8px; }
       .quiz-option { min-height: 52px; }
       .card-scene, .flashcard { min-height: 360px; }
@@ -313,9 +322,14 @@
           <div class="brand-caption">Học từ vựng tiếng Đức</div>
         </div>
       </div>
-      <label class="import-button" id="import-label" for="excel-file" title="Chọn file Excel từ thiết bị cho nhóm đang học">
-        <span aria-hidden="true">+</span> Nhập Excel
-      </label>
+      <div class="import-actions">
+        <label class="import-button" id="import-label" for="excel-file" title="Chọn file Excel từ thiết bị cho nhóm đang học">
+          <span aria-hidden="true">+</span> Nhập Excel từ máy
+        </label>
+        <button class="import-button repo-import-button" id="repo-import-button" type="button" title="Tải workbook trong folder Vocab của repository">
+          <span aria-hidden="true">↓</span> Nhập từ Vocab repo
+        </button>
+      </div>
       <input id="excel-file" type="file" accept=".xlsx,.xls,.xlsm">
     </header>
 
@@ -325,16 +339,16 @@
           <p class="sidebar-label">HỌC THEO NHÓM</p>
           <div class="mode-tabs" role="tablist" aria-label="Nhóm học">
             <button class="mode-tab" id="tab-plural" type="button" role="tab" aria-selected="true" aria-controls="study-panel" data-mode="plural">
-              <span class="tab-number" aria-hidden="true">01</span><span class="tab-name">Danh từ có dạng số nhiều</span><span class="tab-count" id="plural-count">1</span>
+              <span class="tab-number" aria-hidden="true">01</span><span class="tab-name">Danh từ có dạng số nhiều</span><span class="tab-count" id="plural-count">0</span>
             </button>
             <button class="mode-tab" id="tab-no-plural" type="button" role="tab" aria-selected="false" aria-controls="study-panel" data-mode="noPlural" tabindex="-1">
-              <span class="tab-number" aria-hidden="true">02</span><span class="tab-name">Danh từ không có dạng số nhiều</span><span class="tab-count" id="no-plural-count">3</span>
+              <span class="tab-number" aria-hidden="true">02</span><span class="tab-name">Danh từ không có dạng số nhiều</span><span class="tab-count" id="no-plural-count">0</span>
             </button>
             <button class="mode-tab" id="tab-verbs" type="button" role="tab" aria-selected="false" aria-controls="study-panel" data-mode="verbs" tabindex="-1">
-              <span class="tab-number" aria-hidden="true">03</span><span class="tab-name">Động từ bất quy tắc</span><span class="tab-count" id="verbs-count">2</span>
+              <span class="tab-number" aria-hidden="true">03</span><span class="tab-name">Động từ bất quy tắc</span><span class="tab-count" id="verbs-count">0</span>
             </button>
             <button class="mode-tab" id="tab-regular-verbs" type="button" role="tab" aria-selected="false" aria-controls="study-panel" data-mode="regularVerbs" tabindex="-1">
-              <span class="tab-number" aria-hidden="true">04</span><span class="tab-name">Động từ có quy tắc</span><span class="tab-count" id="regular-verbs-count">6</span>
+              <span class="tab-number" aria-hidden="true">04</span><span class="tab-name">Động từ có quy tắc</span><span class="tab-count" id="regular-verbs-count">0</span>
             </button>
           </div>
         </aside>
@@ -361,6 +375,7 @@
           </div>
         </div>
         <div class="study-column">
+          <div class="empty-state" id="empty-state">Chưa có dữ liệu cho nhóm này.</div>
           <div id="flashcard-view">
           <div class="session-bar">
             <span class="session-title">Đang học</span>
@@ -466,26 +481,12 @@
 
   <script>
     const cardSets = {
-      plural: [{ german: "der Florist", form: "die Floristin", meaning: "người bán hoa" }],
-      noPlural: [
-        { german: "Der Montag", form: "", meaning: "thứ 2" },
-        { german: "Der Dienstag", form: "", meaning: "thứ 3" },
-        { german: "Der Mittwosh", form: "", meaning: "thứ 4" }
-      ],
-      verbs: [
-        { german: "sein", ich: "bin", du: "bist", erSieEs: "ist", wir: "sind", ihr: "seid", sieSie: "sind", meaning: "thì, là, ở" },
-        { german: "haben", ich: "habe", du: "hast", erSieEs: "hat", wir: "haben", ihr: "habt", sieSie: "haben", meaning: "có" }
-      ],
-      regularVerbs: [
-        { german: "machen", form: "", meaning: "làm" },
-        { german: "wohnen", form: "", meaning: "sống, cư trú, trọ tại" },
-        { german: "kommen", form: "", meaning: "đến, đến từ" },
-        { german: "heißen", form: "", meaning: "tên là" },
-        { german: "mieten", form: "", meaning: "thuê" },
-        { german: "arbeiten", form: "", meaning: "làm việc" }
-      ]
+      plural: [],
+      noPlural: [],
+      verbs: [],
+      regularVerbs: []
     };
-    const sourceNames = { plural: "Vocab/noun1.xlsx + noun2.xlsx + noun3.xlsx", noPlural: "Vocab/thungay.xlsx", verbs: "Vocab/dongtubatquytac.xlsx", regularVerbs: "Vocab/dongtucoquytac.xlsx" };
+    const sourceNames = { plural: "Chưa nhập", noPlural: "Chưa nhập", verbs: "Chưa nhập", regularVerbs: "Chưa nhập" };
     const repoWorkbooks = {
       plural: ["Vocab/noun1.xlsx", "Vocab/noun2.xlsx", "Vocab/noun3.xlsx"],
       noPlural: ["Vocab/thungay.xlsx"],
@@ -577,30 +578,16 @@
       return XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: "" });
     }
 
-    async function loadRepoVocabulary() {
-      await ensureXlsxLibrary();
-      const loadedSets = await Promise.all(Object.entries(repoWorkbooks).map(async ([mode, paths]) => {
-        const sheets = await Promise.all(paths.map(fetchWorkbookRows));
-        return [mode, parseWorkbookRows(sheets.flat(), mode)];
-      }));
-      for (const [mode, importedCards] of loadedSets) {
-        if (!importedCards.length) throw new Error(`Không có dữ liệu hợp lệ trong ${repoWorkbooks[mode].join(", ")}.`);
-        cardSets[mode] = importedCards;
-        sourceNames[mode] = repoWorkbooks[mode].join(" + ");
-      }
-      document.getElementById("plural-count").textContent = cardSets.plural.length;
-      document.getElementById("no-plural-count").textContent = cardSets.noPlural.length;
-      document.getElementById("verbs-count").textContent = cardSets.verbs.length;
-      document.getElementById("regular-verbs-count").textContent = cardSets.regularVerbs.length;
-      cards = cardSets[activeMode];
-      currentIndex = 0;
-      renderCard();
-      if (practiceMode === "quiz") startQuiz();
-      showToast("Đã tải từ vựng từ folder Vocab trên website.");
-    }
-
     function renderCard() {
-      if (!cards.length) return;
+      const hasCards = cards.length > 0;
+      document.getElementById("empty-state").hidden = hasCards;
+      document.getElementById("flashcard-view").hidden = !hasCards || practiceMode === "quiz";
+      document.getElementById("quiz-view").hidden = !hasCards || practiceMode !== "quiz";
+      if (!hasCards) {
+        document.getElementById("card-counter").textContent = "0 / 0";
+        updateStats();
+        return;
+      }
       const card = cards[currentIndex];
       cardElement.classList.remove("is-flipped");
       document.getElementById("front-word").textContent = card.german;
@@ -615,6 +602,39 @@
       document.getElementById("front-index").textContent = indexLabel;
       document.getElementById("back-index").textContent = indexLabel;
       updateStats();
+    }
+
+    function applyImportedCards(importedCards, sourceName) {
+      cardSets[activeMode] = importedCards;
+      sourceNames[activeMode] = sourceName;
+      const countElement = activeMode === "plural" ? "plural-count" : activeMode === "noPlural" ? "no-plural-count" : activeMode === "verbs" ? "verbs-count" : "regular-verbs-count";
+      document.getElementById(countElement).textContent = importedCards.length;
+      document.getElementById("source-name").textContent = sourceName;
+      currentIndex = 0;
+      cards = importedCards;
+      renderCard();
+      if (practiceMode === "quiz") startQuiz();
+    }
+
+    async function importRepoWorkbook() {
+      const button = document.getElementById("repo-import-button");
+      const originalLabel = button.textContent.trim();
+      button.disabled = true;
+      button.textContent = "Đang tải từ repo...";
+      try {
+        await ensureXlsxLibrary();
+        const paths = repoWorkbooks[activeMode];
+        const sheets = await Promise.all(paths.map(path => fetchWorkbookRows(path)));
+        const importedCards = parseWorkbookRows(sheets.flat(), activeMode);
+        if (!importedCards.length) throw new Error(`Không có dữ liệu hợp lệ trong ${paths.join(", ")}.`);
+        applyImportedCards(importedCards, paths.join(" + "));
+        showToast(`Đã nhập ${importedCards.length} thẻ từ Vocab repo.`);
+      } catch (error) {
+        showToast(error.message || "Không tải được Excel từ Vocab repo.");
+      } finally {
+        button.disabled = false;
+        button.textContent = originalLabel;
+      }
     }
 
     function switchMode(mode) {
@@ -636,7 +656,7 @@
       document.getElementById("source-description").textContent = mode === "plural" ? "Cột A là từ gốc; cột B và C là đáp án." : mode === "noPlural" ? "Cột A là từ; cột B là nghĩa tiếng Việt." : mode === "regularVerbs" ? "Cột A là động từ; cột B là nghĩa tiếng Việt." : "Cột A là động từ gốc; B-G là cách chia; H là nghĩa.";
       document.getElementById("import-label").title = mode === "plural" ? "Chọn Excel: cột A từ gốc, B dạng số nhiều, C nghĩa" : mode === "noPlural" || mode === "regularVerbs" ? "Chọn Excel: cột A từ tiếng Đức, B nghĩa tiếng Việt" : "Chọn Excel: cột A động từ gốc, B-G cách chia, H nghĩa";
       renderCard();
-      if (practiceMode === "quiz") startQuiz();
+      if (practiceMode === "quiz" && cards.length) startQuiz();
     }
 
     function renderVerbForms(card) {
@@ -724,16 +744,19 @@
     function setPracticeMode(mode) {
       practiceMode = mode;
       const isQuiz = mode === "quiz";
+      const hasCards = cards.length > 0;
       document.getElementById("flashcard-mode-button").setAttribute("aria-pressed", String(!isQuiz));
       document.getElementById("quiz-mode-button").setAttribute("aria-pressed", String(isQuiz));
       document.getElementById("quiz-directions").hidden = !isQuiz;
-      document.getElementById("flashcard-view").hidden = isQuiz;
-      document.getElementById("quiz-view").hidden = !isQuiz;
+      document.getElementById("empty-state").hidden = hasCards;
+      document.getElementById("flashcard-view").hidden = isQuiz || !hasCards;
+      document.getElementById("quiz-view").hidden = !isQuiz || !hasCards;
       document.querySelector(".heading-note").textContent = isQuiz ? "Chọn một đáp án cho từng từ. Hoàn thành đủ lượt để xem kết quả." : "Lật thẻ, nhớ từ, rồi tự đánh dấu để theo dõi buổi học.";
-      if (isQuiz) startQuiz();
+      if (isQuiz && hasCards) startQuiz();
     }
 
     function startQuiz(direction = quizDirection) {
+      if (!cards.length) return;
       quizDirection = direction;
       const entries = cards.map((card, index) => ({ card, index }));
       for (let index = entries.length - 1; index > 0; index--) {
@@ -935,6 +958,7 @@
     document.getElementById("mark-known").addEventListener("click", () => rateCard("known"));
     document.getElementById("flashcard-mode-button").addEventListener("click", () => setPracticeMode("flashcards"));
     document.getElementById("quiz-mode-button").addEventListener("click", () => setPracticeMode("quiz"));
+    document.getElementById("repo-import-button").addEventListener("click", importRepoWorkbook);
     document.querySelectorAll("[data-direction]").forEach(button => button.addEventListener("click", () => startQuiz(button.dataset.direction)));
     document.getElementById("quiz-next").addEventListener("click", advanceQuiz);
     document.getElementById("quiz-restart").addEventListener("click", () => startQuiz());
@@ -972,16 +996,8 @@
         const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: "" });
         const importedCards = parseWorkbookRows(rows, activeMode);
         if (!importedCards.length) throw new Error(activeMode === "plural" ? "Không tìm thấy dữ liệu ở cột A, B, C trong sheet đầu tiên." : activeMode === "noPlural" || activeMode === "regularVerbs" ? "Không tìm thấy dữ liệu ở cột A, B trong sheet đầu tiên." : "Không tìm thấy dữ liệu ở cột A-H trong sheet đầu tiên.");
-        cardSets[activeMode] = importedCards;
-        sourceNames[activeMode] = file.name;
-        const countElement = activeMode === "plural" ? "plural-count" : activeMode === "noPlural" ? "no-plural-count" : activeMode === "verbs" ? "verbs-count" : "regular-verbs-count";
-        document.getElementById(countElement).textContent = importedCards.length;
-        document.getElementById("source-name").textContent = file.name;
-        currentIndex = 0;
-        cards = cardSets[activeMode];
-        renderCard();
-        if (practiceMode === "quiz") startQuiz();
-        showToast(`Đã nhập ${cards.length} thẻ từ ${file.name}.`);
+        applyImportedCards(importedCards, file.name);
+        showToast(`Đã nhập ${importedCards.length} thẻ từ ${file.name}.`);
       } catch (error) {
         showToast(error.message || "Không đọc được file Excel.");
       } finally {
@@ -994,12 +1010,6 @@
     document.getElementById("verbs-count").textContent = cardSets.verbs.length;
     document.getElementById("regular-verbs-count").textContent = cardSets.regularVerbs.length;
     switchMode("plural");
-    if (location.protocol === "http:" || location.protocol === "https:") {
-      loadRepoVocabulary().catch(error => {
-        console.error(error);
-        showToast("Không tải được workbook trong folder Vocab của repo.");
-      });
-    }
   </script>
 </body>
 </html>
