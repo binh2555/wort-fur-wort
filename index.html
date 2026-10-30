@@ -313,7 +313,7 @@
           <div class="brand-caption">Học từ vựng tiếng Đức</div>
         </div>
       </div>
-      <label class="import-button" id="import-label" for="excel-file" title="Chọn workbook cho nhóm đang học">
+      <label class="import-button" id="import-label" for="excel-file" title="Chọn file Excel từ thiết bị cho nhóm đang học">
         <span aria-hidden="true">+</span> Nhập Excel
       </label>
       <input id="excel-file" type="file" accept=".xlsx,.xls,.xlsm">
@@ -485,7 +485,13 @@
         { german: "arbeiten", form: "", meaning: "làm việc" }
       ]
     };
-    const sourceNames = { plural: "Vocab/noun.xlsx", noPlural: "Vocab/thungay.xlsx", verbs: "Vocab/dongtubatquytac.xlsx", regularVerbs: "Vocab/dongtucoquytac.xlsx" };
+    const sourceNames = { plural: "Vocab/noun1.xlsx + noun2.xlsx + noun3.xlsx", noPlural: "Vocab/thungay.xlsx", verbs: "Vocab/dongtubatquytac.xlsx", regularVerbs: "Vocab/dongtucoquytac.xlsx" };
+    const repoWorkbooks = {
+      plural: ["Vocab/noun1.xlsx", "Vocab/noun2.xlsx", "Vocab/noun3.xlsx"],
+      noPlural: ["Vocab/thungay.xlsx"],
+      verbs: ["Vocab/dongtubatquytac.xlsx"],
+      regularVerbs: ["Vocab/dongtucoquytac.xlsx"]
+    };
     const modeTitles = {
       plural: "Danh từ có dạng số nhiều",
       noPlural: "Danh từ không có dạng số nhiều",
@@ -531,6 +537,67 @@
     }
 
     function cardKey(card) { return `${card.german}\u0000${card.form}\u0000${card.meaning}`; }
+
+    async function ensureXlsxLibrary() {
+      if (window.XLSX) return;
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Không tải được trình đọc Excel. Kiểm tra kết nối mạng."));
+        document.head.appendChild(script);
+      });
+    }
+
+    function parseWorkbookRows(rows, mode) {
+      return rows.map(row => mode === "plural" ? ({
+        german: String(row[0] ?? "").trim(),
+        form: String(row[1] ?? "").trim(),
+        meaning: String(row[2] ?? "").trim()
+      }) : mode === "noPlural" || mode === "regularVerbs" ? ({
+        german: String(row[0] ?? "").trim(),
+        form: "",
+        meaning: String(row[1] ?? "").trim()
+      }) : ({
+        german: String(row[0] ?? "").trim(),
+        ich: String(row[1] ?? "").trim(),
+        du: String(row[2] ?? "").trim(),
+        erSieEs: String(row[3] ?? "").trim(),
+        wir: String(row[4] ?? "").trim(),
+        ihr: String(row[5] ?? "").trim(),
+        sieSie: String(row[6] ?? "").trim(),
+        meaning: String(row[7] ?? "").trim()
+      })).filter(card => card.german && card.meaning);
+    }
+
+    async function fetchWorkbookRows(path) {
+      const response = await fetch(new URL(path, document.baseURI), { cache: "no-cache" });
+      if (!response.ok) throw new Error(`Không tải được ${path} (${response.status}).`);
+      const workbook = XLSX.read(await response.arrayBuffer(), { type: "array" });
+      return XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: "" });
+    }
+
+    async function loadRepoVocabulary() {
+      await ensureXlsxLibrary();
+      const loadedSets = await Promise.all(Object.entries(repoWorkbooks).map(async ([mode, paths]) => {
+        const sheets = await Promise.all(paths.map(fetchWorkbookRows));
+        return [mode, parseWorkbookRows(sheets.flat(), mode)];
+      }));
+      for (const [mode, importedCards] of loadedSets) {
+        if (!importedCards.length) throw new Error(`Không có dữ liệu hợp lệ trong ${repoWorkbooks[mode].join(", ")}.`);
+        cardSets[mode] = importedCards;
+        sourceNames[mode] = repoWorkbooks[mode].join(" + ");
+      }
+      document.getElementById("plural-count").textContent = cardSets.plural.length;
+      document.getElementById("no-plural-count").textContent = cardSets.noPlural.length;
+      document.getElementById("verbs-count").textContent = cardSets.verbs.length;
+      document.getElementById("regular-verbs-count").textContent = cardSets.regularVerbs.length;
+      cards = cardSets[activeMode];
+      currentIndex = 0;
+      renderCard();
+      if (practiceMode === "quiz") startQuiz();
+      showToast("Đã tải từ vựng từ folder Vocab trên website.");
+    }
 
     function renderCard() {
       if (!cards.length) return;
@@ -900,35 +967,10 @@
       const file = fileInput.files && fileInput.files[0];
       if (!file) return;
       try {
-        if (!window.XLSX) {
-          await new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
-            script.onload = resolve;
-            script.onerror = () => reject(new Error("Không tải được trình đọc Excel. Kiểm tra kết nối mạng."));
-            document.head.appendChild(script);
-          });
-        }
+        await ensureXlsxLibrary();
         const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
         const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: "" });
-        const importedCards = rows.map(row => activeMode === "plural" ? ({
-          german: String(row[0] ?? "").trim(),
-          form: String(row[1] ?? "").trim(),
-          meaning: String(row[2] ?? "").trim()
-        }) : activeMode === "noPlural" || activeMode === "regularVerbs" ? ({
-          german: String(row[0] ?? "").trim(),
-          form: "",
-          meaning: String(row[1] ?? "").trim()
-        }) : ({
-          german: String(row[0] ?? "").trim(),
-          ich: String(row[1] ?? "").trim(),
-          du: String(row[2] ?? "").trim(),
-          erSieEs: String(row[3] ?? "").trim(),
-          wir: String(row[4] ?? "").trim(),
-          ihr: String(row[5] ?? "").trim(),
-          sieSie: String(row[6] ?? "").trim(),
-          meaning: String(row[7] ?? "").trim()
-        })).filter(card => card.german && card.meaning);
+        const importedCards = parseWorkbookRows(rows, activeMode);
         if (!importedCards.length) throw new Error(activeMode === "plural" ? "Không tìm thấy dữ liệu ở cột A, B, C trong sheet đầu tiên." : activeMode === "noPlural" || activeMode === "regularVerbs" ? "Không tìm thấy dữ liệu ở cột A, B trong sheet đầu tiên." : "Không tìm thấy dữ liệu ở cột A-H trong sheet đầu tiên.");
         cardSets[activeMode] = importedCards;
         sourceNames[activeMode] = file.name;
@@ -952,6 +994,12 @@
     document.getElementById("verbs-count").textContent = cardSets.verbs.length;
     document.getElementById("regular-verbs-count").textContent = cardSets.regularVerbs.length;
     switchMode("plural");
+    if (location.protocol === "http:" || location.protocol === "https:") {
+      loadRepoVocabulary().catch(error => {
+        console.error(error);
+        showToast("Không tải được workbook trong folder Vocab của repo.");
+      });
+    }
   </script>
 </body>
 </html>
