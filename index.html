@@ -87,6 +87,17 @@
     .repo-import-button span { color: white; }
     .repo-import-button:hover { border-color: var(--green-dark); background: var(--green-dark); }
     .repo-import-button:disabled { opacity: .65; cursor: wait; }
+    .repo-file-dialog { width: min(460px, calc(100% - 32px)); max-height: min(80vh, 620px); padding: 22px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--ink); box-shadow: var(--shadow); }
+    .repo-file-dialog::backdrop { background: rgba(15, 32, 25, .48); }
+    .repo-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .repo-dialog-heading h2 { margin: 0; font-size: 19px; font-weight: 650; }
+    .repo-dialog-description { margin: 8px 0 16px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .repo-file-list { display: grid; gap: 8px; max-height: 50vh; overflow-y: auto; }
+    .repo-file-choice { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: white; cursor: pointer; text-align: left; }
+    .repo-file-choice:hover { border-color: #9fb6a4; background: #f9fcf8; }
+    .repo-file-name { overflow-wrap: anywhere; font-size: 13px; font-weight: 650; }
+    .repo-file-type { flex: 0 0 auto; color: var(--muted); font-size: 10px; }
+    .repo-dialog-close { flex: 0 0 34px; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 5px; background: white; cursor: pointer; font-size: 18px; }
     #excel-file { display: none; }
 
     main { padding: 45px 0 62px; animation: enter .55s ease both; }
@@ -326,8 +337,8 @@
         <label class="import-button" id="import-label" for="excel-file" title="Chọn file Excel từ thiết bị cho nhóm đang học">
           <span aria-hidden="true">+</span> Nhập Excel từ máy
         </label>
-        <button class="import-button repo-import-button" id="repo-import-button" type="button" title="Tải workbook trong folder Vocab của repository">
-          <span aria-hidden="true">↓</span> Nhập từ Vocab repo
+          <button class="import-button repo-import-button" id="repo-import-button" type="button" title="Chọn file Excel trong folder Vocab của repository">
+            <span aria-hidden="true">↓</span> Chọn Excel trong repo
         </button>
       </div>
       <input id="excel-file" type="file" accept=".xlsx,.xls,.xlsm">
@@ -477,6 +488,14 @@
       </div>
     </main>
   </div>
+  <dialog class="repo-file-dialog" id="repo-file-dialog" aria-labelledby="repo-dialog-title">
+    <div class="repo-dialog-heading">
+      <h2 id="repo-dialog-title">Chọn file trong Vocab</h2>
+      <button class="repo-dialog-close" id="repo-dialog-close" type="button" aria-label="Đóng danh sách">×</button>
+    </div>
+    <p class="repo-dialog-description" id="repo-dialog-description"></p>
+    <div class="repo-file-list" id="repo-file-list" aria-label="File Excel trong nhóm đang chọn"></div>
+  </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -616,24 +635,47 @@
       if (practiceMode === "quiz") startQuiz();
     }
 
-    async function importRepoWorkbook() {
+    function openRepoFilePicker() {
+      const dialog = document.getElementById("repo-file-dialog");
+      const fileList = document.getElementById("repo-file-list");
+      const paths = repoWorkbooks[activeMode] || [];
+      fileList.replaceChildren();
+      document.getElementById("repo-dialog-title").textContent = `Chọn Excel cho: ${modeTitles[activeMode]}`;
+      document.getElementById("repo-dialog-description").textContent = paths.length > 1
+        ? "Chọn một workbook trong folder Vocab để nạp vào nhóm đang học."
+        : "Chọn workbook trong folder Vocab để nạp vào nhóm đang học.";
+      for (const path of paths) {
+        const choice = document.createElement("button");
+        choice.type = "button";
+        choice.className = "repo-file-choice";
+        const name = document.createElement("span");
+        name.className = "repo-file-name";
+        name.textContent = path.split("/").at(-1);
+        const kind = document.createElement("span");
+        kind.className = "repo-file-type";
+        kind.textContent = "Excel";
+        choice.append(name, kind);
+        choice.addEventListener("click", () => importRepoWorkbook(path));
+        fileList.append(choice);
+      }
+      dialog.showModal();
+    }
+
+    async function importRepoWorkbook(path) {
       const button = document.getElementById("repo-import-button");
-      const originalLabel = button.textContent.trim();
       button.disabled = true;
-      button.textContent = "Đang tải từ repo...";
       try {
         await ensureXlsxLibrary();
-        const paths = repoWorkbooks[activeMode];
-        const sheets = await Promise.all(paths.map(path => fetchWorkbookRows(path)));
-        const importedCards = parseWorkbookRows(sheets.flat(), activeMode);
-        if (!importedCards.length) throw new Error(`Không có dữ liệu hợp lệ trong ${paths.join(", ")}.`);
-        applyImportedCards(importedCards, paths.join(" + "));
-        showToast(`Đã nhập ${importedCards.length} thẻ từ Vocab repo.`);
+        const rows = await fetchWorkbookRows(path);
+        const importedCards = parseWorkbookRows(rows, activeMode);
+        if (!importedCards.length) throw new Error(`Không có dữ liệu hợp lệ trong ${path}.`);
+        applyImportedCards(importedCards, path);
+        document.getElementById("repo-file-dialog").close();
+        showToast(`Đã nhập ${importedCards.length} thẻ từ ${path}.`);
       } catch (error) {
         showToast(error.message || "Không tải được Excel từ Vocab repo.");
       } finally {
         button.disabled = false;
-        button.textContent = originalLabel;
       }
     }
 
@@ -958,7 +1000,8 @@
     document.getElementById("mark-known").addEventListener("click", () => rateCard("known"));
     document.getElementById("flashcard-mode-button").addEventListener("click", () => setPracticeMode("flashcards"));
     document.getElementById("quiz-mode-button").addEventListener("click", () => setPracticeMode("quiz"));
-    document.getElementById("repo-import-button").addEventListener("click", importRepoWorkbook);
+    document.getElementById("repo-import-button").addEventListener("click", openRepoFilePicker);
+    document.getElementById("repo-dialog-close").addEventListener("click", () => document.getElementById("repo-file-dialog").close());
     document.querySelectorAll("[data-direction]").forEach(button => button.addEventListener("click", () => startQuiz(button.dataset.direction)));
     document.getElementById("quiz-next").addEventListener("click", advanceQuiz);
     document.getElementById("quiz-restart").addEventListener("click", () => startQuiz());
