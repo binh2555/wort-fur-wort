@@ -548,6 +548,9 @@
     let quizOptions = [];
     let quizAdvanceTimer = null;
     const previousQuizOrder = {};
+    let speechVoiceTimer = null;
+    let speechVoiceListener = null;
+    let speechRequestId = 0;
     let progress = loadProgress();
     let toastTimer;
 
@@ -925,6 +928,51 @@
       return button;
     }
 
+    function speakGerman(text, rate = 1) {
+      const synthesizer = window.speechSynthesis;
+      const requestId = ++speechRequestId;
+      if (speechVoiceTimer !== null) clearTimeout(speechVoiceTimer);
+      if (speechVoiceListener) synthesizer.removeEventListener("voiceschanged", speechVoiceListener);
+      speechVoiceTimer = null;
+      speechVoiceListener = null;
+      if (synthesizer.speaking || synthesizer.pending) synthesizer.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "de-DE";
+      utterance.rate = rate;
+      utterance.volume = 1;
+      utterance.onerror = event => {
+        if (event.error === "canceled" || event.error === "interrupted") return;
+        showToast("Không phát được tiếng Đức. Hãy bật/cài voice tiếng Đức trong cài đặt Text-to-speech của thiết bị.");
+      };
+
+      let started = false;
+      const startSpeech = () => {
+        if (started || requestId !== speechRequestId) return;
+        started = true;
+        if (speechVoiceTimer !== null) clearTimeout(speechVoiceTimer);
+        if (speechVoiceListener) synthesizer.removeEventListener("voiceschanged", speechVoiceListener);
+        speechVoiceTimer = null;
+        speechVoiceListener = null;
+        const germanVoice = synthesizer.getVoices().find(voice => voice.lang.toLowerCase().startsWith("de"));
+        if (germanVoice) utterance.voice = germanVoice;
+        synthesizer.resume();
+        synthesizer.speak(utterance);
+      };
+
+      const availableVoices = synthesizer.getVoices();
+      if (availableVoices.length) {
+        startSpeech();
+        return;
+      }
+      speechVoiceListener = () => {
+        if (synthesizer.getVoices().length) startSpeech();
+      };
+      synthesizer.addEventListener("voiceschanged", speechVoiceListener);
+      speechVoiceTimer = setTimeout(startSpeech, 1200);
+      synthesizer.resume();
+    }
+
     function answerQuiz(optionIndex) {
       if (quizAnswered) return;
       const card = quizDeck[quizIndex];
@@ -1009,20 +1057,7 @@
         showToast("Thẻ này chưa có thông tin để phát âm.");
         return;
       }
-      const synthesizer = window.speechSynthesis;
-      if (synthesizer.speaking || synthesizer.pending) synthesizer.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "de-DE";
-      utterance.rate = button.dataset.rate ? Number(button.dataset.rate) : 1;
-      utterance.volume = 1;
-      const germanVoice = synthesizer.getVoices().find(voice => voice.lang.toLowerCase().startsWith("de"));
-      if (germanVoice) utterance.voice = germanVoice;
-      utterance.onerror = event => {
-        if (event.error === "canceled" || event.error === "interrupted") return;
-        showToast("Thiết bị không phát được giọng đọc. Kiểm tra âm lượng và cài đặt Text-to-speech tiếng Đức.");
-      };
-      synthesizer.resume();
-      synthesizer.speak(utterance);
+      speakGerman(text, button.dataset.rate ? Number(button.dataset.rate) : 1);
     });
     document.getElementById("previous-card").addEventListener("click", () => moveCard(-1));
     document.getElementById("next-card").addEventListener("click", () => moveCard(1));
