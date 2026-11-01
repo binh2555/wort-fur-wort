@@ -551,6 +551,7 @@
     let speechVoiceTimer = null;
     let speechVoiceListener = null;
     let speechRequestId = 0;
+    let activePronunciationAudio = null;
     let progress = loadProgress();
     let toastTimer;
 
@@ -954,8 +955,13 @@
         if (speechVoiceListener) synthesizer.removeEventListener("voiceschanged", speechVoiceListener);
         speechVoiceTimer = null;
         speechVoiceListener = null;
-        const germanVoice = synthesizer.getVoices().find(voice => voice.lang.toLowerCase().startsWith("de"));
-        if (germanVoice) utterance.voice = germanVoice;
+        const voices = synthesizer.getVoices();
+        const germanVoice = voices.find(voice => voice.lang.toLowerCase().startsWith("de"));
+        if (germanVoice) {
+          utterance.voice = germanVoice;
+        } else {
+          showToast("Máy chưa có voice tiếng Đức. Cài German voice trong Google Speech Services/Text-to-speech rồi thử lại.");
+        }
         synthesizer.resume();
         synthesizer.speak(utterance);
       };
@@ -971,6 +977,60 @@
       synthesizer.addEventListener("voiceschanged", speechVoiceListener);
       speechVoiceTimer = setTimeout(startSpeech, 1200);
       synthesizer.resume();
+    }
+
+    function playGermanAudio(text, rate = 1) {
+      const availableGermanVoice = "speechSynthesis" in window && window.speechSynthesis.getVoices().some(voice => voice.lang.toLowerCase().startsWith("de"));
+      if (availableGermanVoice) {
+        speakGerman(text, rate);
+        return;
+      }
+
+      const requestId = ++speechRequestId;
+      if (speechVoiceTimer !== null) clearTimeout(speechVoiceTimer);
+      if (speechVoiceListener) window.speechSynthesis.removeEventListener("voiceschanged", speechVoiceListener);
+      speechVoiceTimer = null;
+      speechVoiceListener = null;
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) window.speechSynthesis.cancel();
+      if (activePronunciationAudio) {
+        activePronunciationAudio.pause();
+        activePronunciationAudio = null;
+      }
+
+      const audioUrl = new URL("https://translate.google.com/translate_tts");
+      audioUrl.search = new URLSearchParams({ ie: "UTF-8", client: "tw-ob", tl: "de", q: text });
+      const audio = new Audio(audioUrl.href);
+      audio.preload = "auto";
+      audio.volume = 1;
+      audio.playbackRate = rate;
+      audio.preservesPitch = true;
+      activePronunciationAudio = audio;
+
+      let fallbackStarted = false;
+      let playbackTimer = null;
+      const clearPlaybackTimer = () => {
+        if (playbackTimer !== null) clearTimeout(playbackTimer);
+        playbackTimer = null;
+      };
+      const fallbackToSpeechSynthesis = () => {
+        if (fallbackStarted || requestId !== speechRequestId) return;
+        fallbackStarted = true;
+        clearPlaybackTimer();
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+        if (activePronunciationAudio === audio) activePronunciationAudio = null;
+        speakGerman(text, rate);
+      };
+      audio.addEventListener("playing", clearPlaybackTimer, { once: true });
+      audio.addEventListener("ended", () => {
+        clearPlaybackTimer();
+        if (activePronunciationAudio === audio) activePronunciationAudio = null;
+      }, { once: true });
+      audio.addEventListener("error", fallbackToSpeechSynthesis, { once: true });
+      playbackTimer = setTimeout(fallbackToSpeechSynthesis, 4000);
+      const playRequest = audio.play();
+      if (playRequest && typeof playRequest.catch === "function") playRequest.catch(fallbackToSpeechSynthesis);
     }
 
     function answerQuiz(optionIndex) {
@@ -1057,7 +1117,7 @@
         showToast("Thẻ này chưa có thông tin để phát âm.");
         return;
       }
-      speakGerman(text, button.dataset.rate ? Number(button.dataset.rate) : 1);
+      playGermanAudio(text, button.dataset.rate ? Number(button.dataset.rate) : 1);
     });
     document.getElementById("previous-card").addEventListener("click", () => moveCard(-1));
     document.getElementById("next-card").addEventListener("click", () => moveCard(1));
