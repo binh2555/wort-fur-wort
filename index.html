@@ -1009,13 +1009,20 @@
         showToast("Thẻ này chưa có thông tin để phát âm.");
         return;
       }
-      window.speechSynthesis.cancel();
+      const synthesizer = window.speechSynthesis;
+      if (synthesizer.speaking || synthesizer.pending) synthesizer.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "de-DE";
       utterance.rate = button.dataset.rate ? Number(button.dataset.rate) : 1;
-      const germanVoice = window.speechSynthesis.getVoices().find(voice => voice.lang.toLowerCase().startsWith("de"));
+      utterance.volume = 1;
+      const germanVoice = synthesizer.getVoices().find(voice => voice.lang.toLowerCase().startsWith("de"));
       if (germanVoice) utterance.voice = germanVoice;
-      window.speechSynthesis.speak(utterance);
+      utterance.onerror = event => {
+        if (event.error === "canceled" || event.error === "interrupted") return;
+        showToast("Thiết bị không phát được giọng đọc. Kiểm tra âm lượng và cài đặt Text-to-speech tiếng Đức.");
+      };
+      synthesizer.resume();
+      synthesizer.speak(utterance);
     });
     document.getElementById("previous-card").addEventListener("click", () => moveCard(-1));
     document.getElementById("next-card").addEventListener("click", () => moveCard(1));
