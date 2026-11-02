@@ -95,8 +95,12 @@
     .repo-file-list { display: grid; gap: 8px; max-height: 50vh; overflow-y: auto; }
     .repo-file-choice { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: white; cursor: pointer; text-align: left; }
     .repo-file-choice:hover { border-color: #9fb6a4; background: #f9fcf8; }
+    .repo-file-choice[aria-pressed="true"] { border-color: var(--green); background: var(--mint); }
     .repo-file-name { overflow-wrap: anywhere; font-size: 13px; font-weight: 650; }
     .repo-file-type { flex: 0 0 auto; color: var(--muted); font-size: 10px; }
+    .repo-import-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px; margin-top: 16px; }
+    .repo-target-field { display: grid; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .repo-target-field select { min-height: 38px; padding: 0 10px; border: 1px solid #cbd7cd; border-radius: 5px; background: white; color: var(--ink); font: inherit; font-size: 12px; }
     .repo-dialog-close { flex: 0 0 34px; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 5px; background: white; cursor: pointer; font-size: 18px; }
     #excel-file { display: none; }
 
@@ -419,8 +423,8 @@
                     <div class="answer-value"><span id="back-root"></span><span class="speaker-group"><button class="speaker-button" type="button" data-speak="root" aria-label="Phát âm từ gốc tốc độ thường" title="Phát âm tốc độ thường"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></button><button class="speaker-button slow" type="button" data-speak="root" data-rate="0.5" aria-label="Phát âm từ gốc chậm, tốc độ 0.5 lần" title="Phát âm chậm 0.5×"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg><span class="speed-badge" aria-hidden="true">0.5×</span></button></span></div>
                   </div>
                   <div class="answer-row plural-row">
-                    <div class="answer-label">Dạng số nhiều</div>
-                    <div class="answer-value"><span id="back-plural"></span><span class="speaker-group"><button class="speaker-button" type="button" data-speak="plural" aria-label="Phát âm dạng số nhiều tốc độ thường" title="Phát âm tốc độ thường"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></button><button class="speaker-button slow" type="button" data-speak="plural" data-rate="0.5" aria-label="Phát âm dạng số nhiều chậm, tốc độ 0.5 lần" title="Phát âm chậm 0.5×"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg><span class="speed-badge" aria-hidden="true">0.5×</span></button></span></div>
+                     <div class="answer-label">Dạng số nhiều</div>
+                     <div class="answer-value"><span id="back-plural"></span><span class="speaker-group"><button class="speaker-button" type="button" data-speak="plural" aria-label="Phát âm dạng số nhiều tốc độ thường" title="Phát âm tốc độ thường"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></button><button class="speaker-button slow" type="button" data-speak="plural" data-rate="0.5" aria-label="Phát âm dạng số nhiều chậm, tốc độ 0.5 lần" title="Phát âm chậm 0.5×"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg><span class="speed-badge" aria-hidden="true">0.5×</span></button></span></div>
                   </div>
                   <div class="answer-row">
                     <div class="answer-label">Nghĩa tiếng Việt</div>
@@ -510,7 +514,19 @@
       <button class="repo-dialog-close" id="repo-dialog-close" type="button" aria-label="Đóng danh sách">×</button>
     </div>
     <p class="repo-dialog-description" id="repo-dialog-description"></p>
-    <div class="repo-file-list" id="repo-file-list" aria-label="File Excel trong nhóm đang chọn"></div>
+    <div class="repo-file-list" id="repo-file-list" aria-label="Tất cả file Excel trong Vocab repo"></div>
+    <div class="repo-import-controls">
+      <label class="repo-target-field" for="repo-target-mode">Nhập file vào nhóm
+        <select id="repo-target-mode">
+          <option value="plural">Danh từ có dạng số nhiều</option>
+          <option value="noPlural">Danh từ không có dạng số nhiều</option>
+          <option value="verbs">Động từ bất quy tắc</option>
+          <option value="regularVerbs">Động từ có quy tắc</option>
+          <option value="singleWords">Từ đơn</option>
+        </select>
+      </label>
+      <button class="quiz-action" id="repo-import-selected" type="button" disabled>Nhập file đã chọn</button>
+    </div>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -623,6 +639,112 @@
       return XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: "" });
     }
 
+    function getGithubPagesRepository() {
+      const suffix = ".github.io";
+      const hostname = window.location.hostname.toLowerCase();
+      if (!hostname.endsWith(suffix)) return null;
+      const owner = hostname.slice(0, -suffix.length);
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      return { owner, repository: pathParts.length ? decodeURIComponent(pathParts[0]) : `${owner}.github.io` };
+    }
+
+    function inferRepoFileMode(path) {
+      if (repoFileModes[path]) return repoFileModes[path];
+      const filename = path.split("/").at(-1).toLowerCase();
+      if (/^noun\d*\.xlsx?$/.test(filename)) return "plural";
+      if (/tudon|single.?words?/.test(filename)) return "singleWords";
+      if (/thungay|weekday/.test(filename)) return "noPlural";
+      if (/dongtu.*batquy|irregular/.test(filename)) return "verbs";
+      if (/dongtu.*coquy|regular/.test(filename)) return "regularVerbs";
+      return null;
+    }
+
+    async function listRepoExcelFiles() {
+      const repository = getGithubPagesRepository();
+      if (!repository) return Object.keys(repoFileModes).map(path => ({ path, mode: repoFileModes[path] }));
+      const apiUrl = `https://api.github.com/repos/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.repository)}/contents/Vocab`;
+      const response = await fetch(apiUrl, { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
+      if (!response.ok) throw new Error(`GitHub không trả được folder Vocab (${response.status}).`);
+      const entries = await response.json();
+      return entries
+        .filter(entry => entry.type === "file" && /\.xlsx?$/i.test(entry.name) && !entry.name.startsWith("~$"))
+        .map(entry => {
+          const path = `Vocab/${entry.name}`;
+          return { path, mode: inferRepoFileMode(path) };
+        });
+    }
+
+    async function openRepoFilePicker() {
+      const dialog = document.getElementById("repo-file-dialog");
+      const fileList = document.getElementById("repo-file-list");
+      const targetMode = document.getElementById("repo-target-mode");
+      const importSelectedButton = document.getElementById("repo-import-selected");
+      let selectedFile = null;
+      fileList.replaceChildren();
+      importSelectedButton.disabled = true;
+      targetMode.value = activeMode;
+      document.getElementById("repo-dialog-title").textContent = "Chọn Excel trong Vocab repo";
+      document.getElementById("repo-dialog-description").textContent = "Đang lấy danh sách mới nhất từ repository...";
+      dialog.showModal();
+      try {
+        const files = await listRepoExcelFiles();
+        if (!files.length) {
+          document.getElementById("repo-dialog-description").textContent = "Folder Vocab hiện không có file Excel.";
+          return;
+        }
+        document.getElementById("repo-dialog-description").textContent = "Danh sách mới nhất trong repo. Chọn file rồi chọn nhóm để nhập.";
+        for (const file of files) {
+          const choice = document.createElement("button");
+          choice.type = "button";
+          choice.className = "repo-file-choice";
+          choice.setAttribute("aria-pressed", "false");
+          const name = document.createElement("span");
+          name.className = "repo-file-name";
+          name.textContent = file.path.split("/").at(-1);
+          const kind = document.createElement("span");
+          kind.className = "repo-file-type";
+          kind.textContent = file.mode ? modeTitles[file.mode] : "Chọn nhóm khi nhập";
+          choice.append(name, kind);
+          choice.addEventListener("click", () => {
+            selectedFile = file;
+            fileList.querySelectorAll(".repo-file-choice").forEach(item => item.setAttribute("aria-pressed", String(item === choice)));
+            targetMode.value = file.mode || activeMode;
+            importSelectedButton.disabled = false;
+          });
+          fileList.append(choice);
+        }
+      } catch (error) {
+        document.getElementById("repo-dialog-description").textContent = error.message || "Không lấy được danh sách Excel từ GitHub.";
+      }
+      importSelectedButton.onclick = () => {
+        if (selectedFile) importRepoWorkbook(selectedFile.path, targetMode.value);
+      };
+    }
+
+    async function importRepoWorkbook(path, mode) {
+      const button = document.getElementById("repo-import-button");
+      button.disabled = true;
+      try {
+        if (!modeTitles[mode]) throw new Error("Chọn nhóm đích cho file Excel trước khi nhập.");
+        await ensureXlsxLibrary();
+        const rows = await fetchWorkbookRows(path);
+        const importedCards = parseWorkbookRows(rows, mode);
+        if (!importedCards.length) throw new Error(`Không có dữ liệu hợp lệ trong ${path}.`);
+        switchMode(mode);
+        applyImportedCards(importedCards, path);
+        dialogCloseRepoPicker();
+        showToast(`Đã nhập ${importedCards.length} thẻ từ ${path}.`);
+      } catch (error) {
+        showToast(error.message || "Không tải được Excel từ Vocab repo.");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function dialogCloseRepoPicker() {
+      document.getElementById("repo-file-dialog").close();
+    }
+
     function renderCard() {
       const hasCards = cards.length > 0;
       document.getElementById("empty-state").hidden = hasCards;
@@ -661,36 +783,58 @@
       if (practiceMode === "quiz") startQuiz();
     }
 
-    function openRepoFilePicker() {
+    async function openRepoFilePicker() {
       const dialog = document.getElementById("repo-file-dialog");
       const fileList = document.getElementById("repo-file-list");
-      const paths = Object.keys(repoFileModes);
+      const importButton = document.getElementById("repo-import-selected");
+      const targetMode = document.getElementById("repo-target-mode");
+      let selectedFile = null;
       fileList.replaceChildren();
+      importButton.disabled = true;
       document.getElementById("repo-dialog-title").textContent = "Chọn Excel trong Vocab repo";
-      document.getElementById("repo-dialog-description").textContent = "Danh sách gồm tất cả file Excel trong repo. Chọn file để nạp vào nhóm phù hợp.";
-      for (const path of paths) {
+      document.getElementById("repo-dialog-description").textContent = "Đang lấy danh sách file mới nhất từ repository...";
+      dialog.showModal();
+      try {
+        const files = await listRepoExcelFiles();
+        if (!files.length) {
+          document.getElementById("repo-dialog-description").textContent = "Folder Vocab hiện không có file Excel.";
+          return;
+        }
+        document.getElementById("repo-dialog-description").textContent = "Danh sách mới nhất trong folder Vocab. Chọn file rồi chọn nhóm để nhập.";
+        for (const file of files) {
+          const { path, mode } = file;
         const choice = document.createElement("button");
         choice.type = "button";
         choice.className = "repo-file-choice";
+        choice.setAttribute("aria-pressed", "false");
         const name = document.createElement("span");
         name.className = "repo-file-name";
         name.textContent = path.split("/").at(-1);
         const kind = document.createElement("span");
         kind.className = "repo-file-type";
-        kind.textContent = modeTitles[repoFileModes[path]];
+          kind.textContent = mode ? modeTitles[mode] : "Chọn nhóm khi nhập";
         choice.append(name, kind);
-        choice.addEventListener("click", () => importRepoWorkbook(path));
+          choice.addEventListener("click", () => {
+            selectedFile = path;
+            fileList.querySelectorAll(".repo-file-choice").forEach(item => item.setAttribute("aria-pressed", String(item === choice)));
+            targetMode.value = mode || activeMode;
+            importButton.disabled = false;
+          });
         fileList.append(choice);
       }
-      dialog.showModal();
+      } catch (error) {
+        document.getElementById("repo-dialog-description").textContent = error.message || "Không lấy được danh sách Excel từ GitHub.";
+      }
+      importButton.onclick = () => {
+        if (selectedFile) importRepoWorkbook(selectedFile, targetMode.value);
+      };
     }
 
-    async function importRepoWorkbook(path) {
+    async function importRepoWorkbook(path, mode) {
       const button = document.getElementById("repo-import-button");
       button.disabled = true;
       try {
-        const mode = repoFileModes[path];
-        if (!mode) throw new Error("File này chưa được ánh xạ vào nhóm học.");
+        if (!modeTitles[mode]) throw new Error("Chọn nhóm đích cho file Excel trước khi nhập.");
         await ensureXlsxLibrary();
         const rows = await fetchWorkbookRows(path);
         const importedCards = parseWorkbookRows(rows, mode);
@@ -1222,7 +1366,7 @@
         const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
         const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: "" });
         const importedCards = parseWorkbookRows(rows, activeMode);
-        if (!importedCards.length) throw new Error(activeMode === "plural" ? "Không tìm thấy dữ liệu ở cột A, B, C trong sheet đầu tiên." : activeMode === "noPlural" || activeMode === "regularVerbs" ? "Không tìm thấy dữ liệu ở cột A, B trong sheet đầu tiên." : "Không tìm thấy dữ liệu ở cột A-H trong sheet đầu tiên.");
+        if (!importedCards.length) throw new Error(activeMode === "plural" ? "Không tìm thấy dữ liệu ở cột A, B, C trong sheet đầu tiên." : activeMode === "noPlural" || activeMode === "regularVerbs" || activeMode === "singleWords" ? "Không tìm thấy dữ liệu ở cột A, B trong sheet đầu tiên." : "Không tìm thấy dữ liệu ở cột A-H trong sheet đầu tiên.");
         applyImportedCards(importedCards, file.name);
         showToast(`Đã nhập ${importedCards.length} thẻ từ ${file.name}.`);
       } catch (error) {
@@ -1236,6 +1380,7 @@
     document.getElementById("no-plural-count").textContent = cardSets.noPlural.length;
     document.getElementById("verbs-count").textContent = cardSets.verbs.length;
     document.getElementById("regular-verbs-count").textContent = cardSets.regularVerbs.length;
+    document.getElementById("single-words-count").textContent = cardSets.singleWords.length;
     switchMode("plural");
   </script>
 </body>
